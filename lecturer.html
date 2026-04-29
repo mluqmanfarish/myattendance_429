@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lecturer Portal | Attendance</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        (function protectPage() {
+            const role = sessionStorage.getItem('userRole');
+            if (role !== 'lecturer') { window.location.href = 'index.html'; }
+        })();
+    </script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F5F5F7; color: #1D1D1F; display: flex; min-height: 100vh; }
+
+        /* --- NAVIGATION SIDEBAR --- */
+        nav { width: 260px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border-right: 1px solid rgba(0,0,0,0.05); padding: 40px 20px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; }
+        nav h1 { font-size: 18px; font-weight: 700; margin-bottom: 30px; color: #0071E3; }
+        nav button { all: unset; padding: 12px 15px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: #86868B; }
+        nav button.active { background: #0071E3; color: white; }
+
+        /* --- MAP STYLING --- */
+        #map { height: 300px; width: 100%; border-radius: 15px; margin-top: 10px; border: 1px solid #D2D2D7; z-index: 1; }
+        .map-hint { font-size: 11px; color: #86868B; margin-top: 8px; display: block; font-weight: 500; }
+
+        /* --- MAIN CONTENT --- */
+        main { flex: 1; padding: 60px; overflow-y: auto; }
+        h2 { font-size: 28px; font-weight: 700; letter-spacing: -1px; margin-bottom: 25px; }
+        .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); max-width: 600px; }
+        
+        .form-row { display: flex; gap: 15px; }
+        .form-group { margin-bottom: 15px; flex: 1; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #86868B; margin-bottom: 6px; }
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #D2D2D7; font-size: 15px; font-family: inherit; }
+        input[readonly] { background: #FBFBFD; color: #0071E3; font-weight: 700; border-style: dashed; }
+        
+        .submit-btn { background: #0071E3; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 10px; }
+
+        .table-container { width: 100%; overflow-x: auto; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 600px; }
+        th { background: #FBFBFD; text-align: left; padding: 15px; font-size: 12px; color: #86868B; }
+        td { padding: 15px; border-top: 1px solid #F5F5F7; font-size: 14px; }
+        .ref-pill { background: rgba(0, 113, 227, 0.1); color: #0071E3; padding: 4px 8px; border-radius: 6px; font-weight: 700; }
+
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <nav id="sidebar">
+        <h1>Lecturer Hub</h1>
+        <button id="btn-add" class="active" onclick="switchPanel('add')">Add Attendance</button>
+        <button id="btn-view" onclick="switchPanel('view')">View Records</button>
+        <button onclick="handleSignOut()" style="margin-top: auto; color: #FF3B30; font-weight: 600;">Sign Out</button>
+    </nav>
+
+    <main>
+        <div id="add-attendance-panel" class="panel active">
+            <h2>New Session</h2>
+            <div class="card">
+                <form id="attendance-form">
+                    <div class="form-group">
+                        <label>Course Name</label>
+                        <input type="text" id="course" placeholder="e.g. Data Structures" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Classroom Location (Search or Click)</label>
+                        <div id="map"></div>
+                        <span class="map-hint">🔍 Use the magnifying glass to search or click the map to set coordinates.</span>
+                        <input type="hidden" id="coords" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ref Code</label>
+                            <input type="text" id="ref-code" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="date" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Time In</label>
+                            <input type="time" id="time-in" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Limit (Min)</label>
+                            <input type="number" id="time-limit" value="30" min="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">Create Session</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="view-attendance-panel" class="panel">
+            <h2>Attendance Records</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Ref</th>
+                            <th>GPS Location</th>
+                            <th>Window</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let map, marker, geocoder;
+
+        function initMap() {
+            const defaultPos = [3.1390, 101.6869]; // Center on Malaysia/KL
+            
+            map = L.map('map').setView(defaultPos, 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            marker = L.marker(defaultPos, {draggable: true}).addTo(map);
+
+            // Add Search Bar (Geocoder)
+            geocoder = L.Control.geocoder({
+                defaultMarkGeocode: false,
+                placeholder: "Search for building/location...",
+                errorMessage: "Location not found."
+            })
+            .on('markgeocode', function(e) {
+                const bbox = e.geocode.bbox;
+                const center = e.geocode.center;
+                map.fitBounds(bbox);
+                marker.setLatLng(center);
+                updateCoords(center.lat, center.lng);
+            })
+            .addTo(map);
+
+            // Click to set location
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                updateCoords(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Drag to set location
+            marker.on('dragend', function() {
+                const pos = marker.getLatLng();
+                updateCoords(pos.lat, pos.lng);
+            });
+
+            // Auto-locate lecturer
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const userPos = [position.coords.latitude, position.coords.longitude];
+                    map.setView(userPos, 17);
+                    marker.setLatLng(userPos);
+                    updateCoords(userPos[0], userPos[1]);
+                });
+            }
+        }
+
+        function updateCoords(lat, lng) {
+            document.getElementById('coords').value = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+        }
+
+        function generateRefCode() {
+            const code = Math.floor(10000 + Math.random() * 90000);
+            document.getElementById('ref-code').value = code;
+        }
+
+        window.onload = () => {
+            initMap();
+            generateRefCode();
+            document.getElementById('date').valueAsDate = new Date();
+            const now = new Date();
+            document.getElementById('time-in').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        };
+
+        function switchPanel(panelName) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(panelName + '-attendance-panel')?.classList.add('active');
+            document.getElementById('view-attendance-panel')?.classList.toggle('active', panelName === 'view');
+            document.getElementById('btn-' + panelName).classList.add('active');
+
+            if (panelName === 'add') {
+                setTimeout(() => map.invalidateSize(), 200);
+            }
+        }
+
+        document.getElementById('attendance-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const course = document.getElementById('course').value;
+            const ref = document.getElementById('ref-code').value;
+            const date = document.getElementById('date').value;
+            const tIn = document.getElementById('time-in').value;
+            const tLimit = document.getElementById('time-limit').value;
+            const coords = document.getElementById('coords').value;
+
+            const tbody = document.getElementById('attendance-body');
+            tbody.innerHTML += `<tr>
+                <td>${course}</td>
+                <td><span class="ref-pill">${ref}</span></td>
+                <td><code style="font-size:11px">${coords}</code></td>
+                <td><span style="color:#FF3B30; font-weight:600;">${tIn} (${tLimit}m)</span></td>
+                <td><span style="color:#0071E3; cursor:pointer; font-weight:600;">Export</span></td>
+            </tr>`;
+            
+            alert(`GPS Session created! Marker set at: ${coords}`);
+            this.reset();
+            switchPanel('view');
+        });
+
+        function handleSignOut() {
+            if (confirm("Sign out?")) { sessionStorage.clear(); window.location.href = 'index.html'; }
+        }
+    </script>
+</body>
+</html>

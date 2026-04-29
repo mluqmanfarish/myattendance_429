@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendance | Welcome</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+    <style>
+        /* Existing Styles Kept Exactly the Same */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F5F5F7;
+            color: #1D1D1F;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+
+        .bg-gradient {
+            position: absolute; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at 10% 20%, rgba(0, 113, 227, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 90% 80%, rgba(175, 82, 222, 0.05) 0%, transparent 50%);
+        }
+
+        #login-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 40px; border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+            text-align: center; width: 90%; max-width: 400px;
+        }
+
+        h1 { font-weight: 700; font-size: 28px; letter-spacing: -0.8px; margin-bottom: 10px; }
+        p { color: #86868B; font-size: 14px; margin-bottom: 30px; }
+
+        .input-group { margin-bottom: 15px; text-align: left; animation: fadeIn 0.4s ease; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #86868B; margin-bottom: 6px; margin-left: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        input {
+            width: 100%; padding: 14px 16px; border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1); background: rgba(255, 255, 255, 0.5);
+            font-family: inherit; font-size: 15px; transition: all 0.2s; outline: none;
+        }
+
+        input:focus { border-color: #0071E3; background: white; box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1); }
+
+        #student-only-fields {
+            max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #student-only-fields.visible { max-height: 100px; opacity: 1; margin-top: 5px; }
+
+        #login-choice { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+        button {
+            font-family: inherit; font-size: 15px; font-weight: 600; padding: 14px;
+            border-radius: 12px; border: none; cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #login-as-stu { background-color: #000000; color: #FFFFFF; }
+        #login-as-lec { background-color: rgba(0, 0, 0, 0.05); color: #1D1D1F; }
+
+        button:hover { transform: translateY(-1px); filter: brightness(1.2); }
+        button:active { transform: scale(0.98); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <div id="login-card">
+        <h1>Attendance</h1>
+        <p>Identify yourself to continue.</p>
+        
+        <div class="input-group">
+            <label for="user-id">Identification ID</label>
+            <input type="text" id="user-id" placeholder="e.g. STU123" oninput="toggleFields()" spellcheck="false">
+        </div>
+
+        <div id="student-only-fields">
+            <div class="input-group">
+                <label for="ref-code">Reference Code (5-Digits)</label>
+                <input type="text" id="ref-code" placeholder="12345" maxlength="5" inputmode="numeric">
+            </div>
+        </div>
+
+        <div id="login-choice">
+            <button id="login-as-stu" onclick="verifyAndLogin('student')">Login as Student</button>
+            <button id="login-as-lec" onclick="verifyAndLogin('lecturer')">Login as Lecturer</button>
+        </div>
+    </div>
+
+    <script>
+        const COOLDOWN_MS = 30 * 60 * 1000; // 30 Minutes
+
+        function toggleFields() {
+            const idInput = document.getElementById('user-id').value.toUpperCase();
+            const extraFields = document.getElementById('student-only-fields');
+            
+            if (idInput.startsWith('STU')) {
+                extraFields.classList.add('visible');
+            } else {
+                extraFields.classList.remove('visible');
+            }
+        }
+
+        function verifyAndLogin(role) {
+            const idInput = document.getElementById('user-id').value.trim();
+            const refInput = document.getElementById('ref-code').value.trim();
+
+            if (!idInput) {
+                alert("Please enter your ID.");
+                return;
+            }
+
+            // STUDENT LOGIC
+            if (role === 'student') {
+                // 1. Check Cooldown FIRST
+                const lastSubmit = localStorage.getItem('lastAttendanceTime');
+                if (lastSubmit) {
+                    const timePassed = Date.now() - parseInt(lastSubmit);
+                    if (timePassed < COOLDOWN_MS) {
+                        const remainingMins = Math.ceil((COOLDOWN_MS - timePassed) / 60000);
+                        alert(`You have already checked in recently. Please wait ${remainingMins} minute(s) before trying again.`);
+                        return; // Block login
+                    }
+                }
+
+                // 2. Validate Credentials
+                const isValidId = (idInput === 'STU123');
+                const isValidRef = (refInput.length === 5 && !isNaN(refInput));
+
+                if (isValidId && isValidRef) {
+                    sessionStorage.setItem('userRole', role);
+                    sessionStorage.setItem('userId', idInput);
+                    sessionStorage.setItem('refCode', refInput);
+                    window.location.href = role + ".html";
+                } else if (!isValidId) {
+                    alert("Invalid Student ID.");
+                } else {
+                    alert("Reference Code must be exactly 5 digits.");
+                }
+                return;
+            }
+
+            // LECTURER LOGIC
+            if (role === 'lecturer' && idInput === 'LEC456') {
+                sessionStorage.setItem('userRole', role);
+                sessionStorage.setItem('userId', idInput);
+                window.location.href = role + ".html";
+                return;
+            }
+
+            alert("Access Denied: ID not recognized.");
+        }
+    </script>
+</body>
+</html>

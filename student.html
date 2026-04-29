@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Campus Check-In | Student</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+    
+    <script>
+        (function protectPage() {
+            const role = sessionStorage.getItem('userRole');
+            const userId = sessionStorage.getItem('userId');
+            if (!role || !userId || role !== 'student') {
+                window.location.href = 'index.html';
+            }
+        })();
+    </script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F2F4F7;
+            color: #1D1D1F;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        body::before, body::after {
+            content: ''; position: absolute; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.6;
+        }
+        body::before { width: 300px; height: 300px; background: #D4E4FF; top: -10%; left: -10%; }
+        body::after { width: 250px; height: 250px; background: #F0E6FF; bottom: -5%; right: -5%; }
+
+        #attendance-card {
+            background-color: rgba(255, 255, 255, 0.8);
+            width: 90%;
+            max-width: 400px;
+            padding: 35px 25px;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            text-align: center;
+        }
+        .status-visual { position: relative; width: 70px; height: 70px; margin: 0 auto 20px; display: flex; justify-content: center; align-items: center; }
+        .status-dot { width: 18px; height: 18px; background-color: #D1D1D6; border-radius: 50%; z-index: 2; transition: all 0.4s ease; }
+        .status-pulse { position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: #D1D1D6; opacity: 0.3; animation: pulse-idle 2.5s infinite; transition: all 0.4s ease; }
+
+        @keyframes pulse-idle { 0% { transform: scale(1); opacity: 0.4; } 100% { transform: scale(1.6); opacity: 0; } }
+        h2 { padding-bottom: 30px; font-weight: 700; font-size: 22px; margin-bottom: 20px; letter-spacing: -0.5px; }
+        .section-tag { font-size: 11px; font-weight: 700; color: #007AFF; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; text-align: left; padding-left: 5px; }
+        .info-list { text-align: left; margin-bottom: 20px; background: rgba(255,255,255,0.4); border-radius: 20px; padding: 8px 15px; }
+        .info-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.03); font-size: 13px; gap: 10px; }
+        .info-item:last-child { border-bottom: none; }
+        .info-label { color: #86868B; font-weight: 500; min-width: 90px; }
+        .info-value { color: #1D1D1F; font-weight: 600; text-align: right; line-height: 1.4; }
+
+        button { 
+            width: 100%; padding: 18px; border-radius: 18px; border: none; 
+            background-color: #000000; color: #FFFFFF; font-family: inherit; 
+            font-size: 16px; font-weight: 600; cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        button:hover:not(:disabled) { transform: translateY(-2px); background-color: #1C1C1E; }
+        button:disabled { background-color: #E5E5EA; color: #AEAEB2; cursor: not-allowed; }
+
+        .is-loading .status-dot, .is-loading .status-pulse { background-color: #007AFF; }
+        .is-success h2 { color: #34C759; }
+        .is-success .status-dot, .is-success .status-pulse { background-color: #34C759; animation: none; }
+        .is-success button { background-color: #34C759; }
+        .is-error h2 { color: #FF3B30; }
+        .is-error .status-dot, .is-error .status-pulse { background-color: #FF3B30; animation: none; }
+    </style>
+</head>
+
+<body>
+    <div id="attendance-card">
+        <div class="status-visual">
+            <div class="status-dot"></div>
+            <div class="status-pulse"></div>
+        </div>
+        <h2 id="status-text">Ready to Verify</h2>
+        <span class="section-tag">Student Info</span>
+        <div class="info-list">
+            <div class="info-item"><span class="info-label">Student ID</span><span id='student-id' class="info-value">---</span></div>
+            <div class="info-item"><span class="info-label">Student Name</span><span id='student-name' class="info-value">---</span></div>
+            <div class="info-item"><span class="info-label">Timestamp</span><span id="val-time" class="info-value">--:--</span></div>
+            <div class="info-item"><span class="info-label">Distance</span><span id="val-distance" class="info-value">--</span></div>
+            <div class="info-item"><span class="info-label">Your Location</span><span id="val-current-name" class="info-value">Not Detected</span></div>
+        </div>
+        <span class="section-tag">Attendance Details</span>
+        <div class="info-list">
+            <div class="info-item"><span class="info-label">Target Venue</span><span id="val-target-name" class="info-value">---</span></div>
+            <div class="info-item"><span class="info-label">Course Name</span><span id="val-course-name" class="info-value">---</span></div>
+            <div class="info-item"><span class="info-label">Ref Code</span><span id="val-ref-code" class="info-value">---</span></div>
+        </div>
+        <button id="action-btn" onclick="handleAttendance()">Mark Attendance</button>
+    </div>
+
+    <script>
+        const VENUE_CONFIG = { name: "Lunas Campus Center", lat: 6.421855, lon: 100.203745 };
+        const THRESHOLD_KM = 100; 
+        const FORM_URL = "https://docs.google.com/forms/u/0/d/1lWPkeQRomJdfuRU2ZzEmfDNVCPo8Lcw6LxK0Cv_PPkc/formResponse";
+
+        document.getElementById('student-id').innerText = sessionStorage.getItem('userId') || 'Guest';
+        document.getElementById('student-name').innerText = sessionStorage.getItem('userName') || '---';
+        document.getElementById('val-target-name').innerText = VENUE_CONFIG.name;
+        document.getElementById('val-ref-code').innerText = sessionStorage.getItem('refCode') || '---';
+        document.getElementById('val-course-name').innerText = sessionStorage.getItem('courseName') || '---';
+
+        async function fetchPlaceName(lat, lon) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+                const data = await response.json();
+                return data.name || data.address.road || "Unnamed Location";
+            } catch (err) { return "Location Name Error"; }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2)**2 + Math.cos(lat1 * Math.PI / 180)*Math.cos(lat2 * Math.PI / 180)*Math.sin(dLon / 2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        const getCoords = () => new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true }));
+
+        function setUIState(state, message, btnLabel) {
+            const card = document.getElementById("attendance-card");
+            const statusText = document.getElementById("status-text");
+            const btn = document.getElementById("action-btn");
+            card.classList.remove('is-loading', 'is-success', 'is-error');
+            if (state) card.classList.add(`is-${state}`);
+            if (message) statusText.innerText = message;
+            if (btnLabel) btn.innerText = btnLabel;
+            btn.disabled = (state === 'loading' || state === 'success');
+        }
+
+        async function sendToGoogleForm(data) {
+            console.log("Attempting Shadow Submit with data:", data);
+            const formData = new URLSearchParams();
+            formData.append('entry.1635954407', data.timestamp);
+            formData.append('entry.533702816', data.studentId);
+            formData.append('entry.1656191659', data.studentName);
+            formData.append('entry.1441013951', data.distance);
+            formData.append('entry.1461474313', data.location);
+
+            try {
+                await fetch(FORM_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    body: formData,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+                console.log("Form successfully posted (Hidden)");
+                localStorage.setItem('lastAttendanceTime', Date.now().toString());
+            } catch (error) { console.error("Network Error:", error); }
+        }
+
+        async function handleAttendance() {
+            setUIState('loading', 'Scanning Venue...', 'Verifying...');
+            try {
+                const pos = await getCoords();
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const actualPlaceName = await fetchPlaceName(lat, lon);
+                const d = calculateDistance(lat, lon, VENUE_CONFIG.lat, VENUE_CONFIG.lon);
+                const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const formattedDist = d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(2)} km`;
+
+                document.getElementById("val-distance").innerText = formattedDist;
+                document.getElementById("val-time").innerText = timeNow;
+                document.getElementById("val-current-name").innerText = actualPlaceName;
+
+                if (d <= THRESHOLD_KM) {
+                    const submissionData = {
+                        timestamp: timeNow,
+                        studentId: sessionStorage.getItem('userId'),
+                        studentName: sessionStorage.getItem('userName') || "Unknown",
+                        distance: formattedDist,
+                        location: actualPlaceName
+                    };
+                    await sendToGoogleForm(submissionData);
+                    setUIState('success', 'Check-In Successful', 'Verified');
+                } else {
+                    setUIState('error', 'Too Far from Venue', 'Retry Check-In');
+                }
+            } catch (err) {
+                setUIState('error', 'Location Denied', 'Retry');
+            }
+        }
+    </script>
+</body>
+</html>
