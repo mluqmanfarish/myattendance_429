@@ -119,16 +119,6 @@
 
             // STUDENT LOGIC
             if (role === 'student') {
-                // 1. Check Cooldown FIRST
-                const lastSubmit = localStorage.getItem('lastAttendanceTime');
-                if (lastSubmit) {
-                    const timePassed = Date.now() - parseInt(lastSubmit);
-                    if (timePassed < COOLDOWN_MS) {
-                        const remainingMins = Math.ceil((COOLDOWN_MS - timePassed) / 60000);
-                        alert(`You have already checked in recently. Please wait ${remainingMins} minute(s) before trying again.`);
-                        return; // Block login
-                    }
-                }
 
                 // 2. Validate Credentials
                 const isValidId = (idInput === 'STU123');
