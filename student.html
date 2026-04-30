@@ -100,141 +100,161 @@
         </div>
         <button id="action-btn" onclick="handleAttendance()">Mark Attendance</button>
     </div>
+<script>
+const THRESHOLD_KM = 0.1; // 100 meters
+const FORM_URL = "https://docs.google.com/forms/u/0/d/1lWPkeQRomJdfuRU2ZzEmfDNVCPo8Lcw6LxK0Cv_PPkc/formResponse";
 
-    <script>
-        const VENUE_CONFIG = { name: "Lunas Campus Center", lat: 6.421855, lon: 100.203745 };
-        const THRESHOLD_KM = 100; 
-        const FORM_URL = "https://docs.google.com/forms/u/0/d/1lWPkeQRomJdfuRU2ZzEmfDNVCPo8Lcw6LxK0Cv_PPkc/formResponse";
+let foundData = null;
 
-        document.getElementById('student-id').innerText = sessionStorage.getItem('userId') || 'Guest';
-        document.getElementById('student-name').innerText = sessionStorage.getItem('userName') || '---';
-        document.getElementById('val-target-name').innerText = VENUE_CONFIG.name;
-        document.getElementById('val-ref-code').innerText = sessionStorage.getItem('refCode') || '---';
-        document.getElementById('val-course-name').innerText = sessionStorage.getItem('courseName') || '---';
+// ================= INIT =================
+document.getElementById('student-id').innerText = sessionStorage.getItem('userId') || 'Guest';
+document.getElementById('student-name').innerText = sessionStorage.getItem('userName') || '---';
+document.getElementById('val-ref-code').innerText = sessionStorage.getItem('refCode') || '---';
 
-
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2)**2 + Math.cos(lat1 * Math.PI / 180)*Math.cos(lat2 * Math.PI / 180)*Math.sin(dLon / 2)**2;
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        }
-
-        const getCoords = () => new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true }));
-
-        function setUIState(state, message, btnLabel) {
-            const card = document.getElementById("attendance-card");
-            const statusText = document.getElementById("status-text");
-            const btn = document.getElementById("action-btn");
-            card.classList.remove('is-loading', 'is-success', 'is-error');
-            if (state) card.classList.add(`is-${state}`);
-            if (message) statusText.innerText = message;
-            if (btnLabel) btn.innerText = btnLabel;
-            btn.disabled = (state === 'loading' || state === 'success');
-        }
-
-        async function sendToGoogleForm(data) {
-            console.log("Attempting Shadow Submit with data:", data);
-            const formData = new URLSearchParams();
-            formData.append('entry.1635954407', data.timestamp);
-            formData.append('entry.533702816', data.studentId);
-            formData.append('entry.1656191659', data.studentName);
-            formData.append('entry.1441013951', data.distance);
-            formData.append('entry.1461474313', data.location);
-
-            try {
-                await fetch(FORM_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    body: formData,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                });
-                console.log("Form successfully posted (Hidden)");
-                localStorage.setItem('lastAttendanceTime', Date.now().toString());
-            } catch (error) { console.error("Network Error:", error); }
-        }
-
-        async function handleAttendance() {
-            setUIState('loading', 'Scanning Venue...', 'Verifying...');
-            try {
-                const pos = await getCoords();
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                const d = calculateDistance(lat, lon, VENUE_CONFIG.lat, VENUE_CONFIG.lon);
-                const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const formattedDist = d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(2)} km`;
-
-                document.getElementById("val-distance").innerText = formattedDist;
-                document.getElementById("val-time").innerText = timeNow;
-                document.getElementById("val-current-name").innerText = `${lat}, ${lon}`;
-
-                if (d <= THRESHOLD_KM) {
-                    const submissionData = {
-                        timestamp: timeNow,
-                        studentId: sessionStorage.getItem('userId'),
-                        studentName: sessionStorage.getItem('userName') || "Unknown",
-                        distance: formattedDist,
-                        location: `${lat}, ${lon}`
-                    };
-                    await sendToGoogleForm(submissionData);
-                    setUIState('success', 'Check-In Successful', 'Verified');
-                } else {
-                    setUIState('error', 'Too Far from Venue', 'Retry Check-In');
-                }
-            } catch (err) {
-                setUIState('error', 'Location Denied', 'Retry');
-            }
-        }
-
+// ================= FETCH GOOGLE SHEET =================
 const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
 const sheetName = "Sheet1";
 
-// FIX 1: Added backticks for template literal
 const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
 fetch(url)
-  .then(res => res.text())
-  .then(data => {
-    // FIX 2: More robust way to strip the prefix if substring(47) feels risky
+.then(res => res.text())
+.then(data => {
     const jsonText = data.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\)/);
-    if (!jsonText) throw new Error("Invalid JSON format from Google");
-    
-    const json = JSON.parse(jsonText[1]);
+    if (!jsonText) throw new Error("Invalid JSON");
 
+    const json = JSON.parse(jsonText[1]);
     const rows = json.table.rows;
     const cols = json.table.cols.map(col => col.label);
 
     const result = rows.map(r => {
-      let obj = {};
-      r.c.forEach((cell, i) => {
-        if (cols[i]) {
-          obj[cols[i]] = cell ? cell.v : "";
-        }
-      });
-      return obj;
+        let obj = {};
+        r.c.forEach((cell, i) => {
+            if (cols[i]) obj[cols[i]] = cell ? cell.v : "";
+        });
+        return obj;
     });
 
-    // FIX 3: Ensure labels match your sheet exactly (e.g., "REFCODE" vs "Ref Code")
     const searchRef = sessionStorage.getItem('refCode');
-    const foundData = result.find(row => String(row["REFCODE"]) === searchRef);
-
-    document.getElementById("val-target-name").innerText = foundData.COORDINATE;
-    document.getElementById("val-course-name").innerText = foundData.COURSE_NAME;
-
+    foundData = result.find(row => String(row["REFCODE"]) === searchRef);
 
     if (foundData) {
-      console.log("Data Found:", foundData);
-      // FIX 4: Check if your sheet uses spaces or underscores in headers
-      console.log("Coords:", foundData["COORDINATE"]);
-      console.log("Course:", foundData["COURSE NAME"] || foundData["COURSE_NAME"]);
-      console.log("Time In:", foundData["TIME IN"] || foundData["TIME_IN"]);
+        document.getElementById("val-target-name").innerText = foundData.COORDINATE;
+        document.getElementById("val-course-name").innerText = foundData.COURSE_NAME;
+        console.log("Data Found:", foundData);
     } else {
-      console.log("Tak jumpa data untuk REFCODE: " + searchRef);
+        console.log("No data found for REFCODE:", searchRef);
     }
-  })
-  .catch(err => console.error("Fetch error:", err));
-    </script>
+})
+.catch(err => console.error("Fetch error:", err));
+
+// ================= HELPERS =================
+function parseCoordinate(coordStr) {
+    const [lat, lon] = coordStr.split(',').map(Number);
+    return [lat, lon];
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+const getCoords = () =>
+    new Promise((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true })
+    );
+
+function setUIState(state, message, btnLabel) {
+    const card = document.getElementById("attendance-card");
+    const statusText = document.getElementById("status-text");
+    const btn = document.getElementById("action-btn");
+
+    card.classList.remove('is-loading', 'is-success', 'is-error');
+    if (state) card.classList.add(`is-${state}`);
+
+    if (message) statusText.innerText = message;
+    if (btnLabel) btn.innerText = btnLabel;
+
+    btn.disabled = (state === 'loading' || state === 'success');
+}
+
+// ================= SEND =================
+async function sendToGoogleForm(data) {
+    const formData = new URLSearchParams();
+
+    formData.append('entry.1635954407', data.timestamp);
+    formData.append('entry.533702816', data.studentId);
+    formData.append('entry.1656191659', data.studentName);
+    formData.append('entry.1441013951', data.distance);
+    formData.append('entry.1461474313', data.location);
+
+    await fetch(FORM_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData
+    });
+
+    localStorage.setItem('lastAttendanceTime', Date.now().toString());
+}
+
+// ================= MAIN =================
+async function handleAttendance() {
+    setUIState('loading', 'Checking...', 'Please wait');
+
+    try {
+        if (!foundData || !foundData.COORDINATE) {
+            setUIState('error', 'Venue not ready', 'Retry');
+            return;
+        }
+
+        const pos = await getCoords();
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        const [latVenue, lonVenue] = parseCoordinate(foundData.COORDINATE);
+
+        const d = calculateDistance(lat, lon, latVenue, lonVenue);
+
+        const timeNow = new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const formattedDist =
+            d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(2)} km`;
+
+        document.getElementById("val-distance").innerText = formattedDist;
+        document.getElementById("val-time").innerText = timeNow;
+        document.getElementById("val-current-name").innerText = `${lat}, ${lon}`;
+
+        if (d <= THRESHOLD_KM) {
+            await sendToGoogleForm({
+                timestamp: timeNow,
+                studentId: sessionStorage.getItem('userId'),
+                studentName: sessionStorage.getItem('userName'),
+                distance: formattedDist,
+                location: `${lat}, ${lon}`
+            });
+
+            setUIState('success', 'Check-In Successful', 'Verified');
+        } else {
+            setUIState('error', 'Too far from venue', 'Retry');
+        }
+
+    } catch (err) {
+        console.error(err);
+        setUIState('error', 'Location denied', 'Retry');
+    }
+}
+</script>
 </body>
 </html>
