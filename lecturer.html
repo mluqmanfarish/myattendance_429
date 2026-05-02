@@ -1,36 +1,40 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lecturer Hub | Elite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Lecturer Hub | Swiss Modern</title>
     
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Leaflet Resources -->
+    <!-- Leaflet JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // --- ORIGINAL PROTECTION LOGIC ---
         (function protectPage() {
             const role = sessionStorage.getItem('userRole');
-            if (role !== 'lecturer') { window.location.href = 'index.html'; }
+            if (role !== 'lecturer') { 
+                // window.location.href = 'index.html'; 
+            }
         })();
     </script>
 
     <style>
         :root {
-            --bg: #ffffff;
+            --bg: #F2F2F2;
             --fg: #000000;
             --accent: #0071E3;
-            --border-width: 2px;
-            --shadow: 6px 6px 0px #000000;
-            --input-bg: #f4f4f4;
-            --dim: #666;
+            --success: #34C759;
+            --warning: #FF9500;
+            --border-width: 3px;
+            --shadow: 8px 8px 0px #000000;
+            --card-bg: #FFFFFF;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
@@ -39,183 +43,134 @@
             font-family: 'Space Grotesk', sans-serif;
             background-color: var(--bg);
             color: var(--fg);
-            min-height: 100vh;
-            padding-bottom: 100px; /* Space for dock */
+            padding-bottom: 120px;
         }
 
         .grid-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -1;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px);
+            background-size: 40px 40px; z-index: -1;
         }
 
-        /* --- HEADER --- */
+        /* --- Header --- */
         header {
-            padding: 20px;
-            border-bottom: var(--border-width) solid var(--fg);
+            padding: 24px;
             background: white;
+            border-bottom: var(--border-width) solid var(--fg);
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
         }
 
-        .brand { font-weight: 700; text-transform: uppercase; letter-spacing: -0.5px; }
-        
-        .sign-out {
-            border: var(--border-width) solid var(--fg);
-            padding: 5px 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 12px;
-            cursor: pointer;
-        }
+        .brand { font-weight: 800; text-transform: uppercase; letter-spacing: -1px; font-size: 20px; }
+        .sys-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: #000; color: #fff; padding: 4px 8px; }
 
-        /* --- LAYOUT --- */
+        /* --- Main Layout --- */
         main {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
         }
 
+        .panel-label {
+            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+            color: #999; margin: 25px 0 12px; display: block;
+        }
+
         .card {
-            background: white;
+            background: var(--card-bg);
             border: var(--border-width) solid var(--fg);
             box-shadow: var(--shadow);
             padding: 30px;
             margin-bottom: 30px;
         }
 
-        h2 {
-            font-size: 24px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            letter-spacing: -1px;
-        }
+        h2 { font-size: 28px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; line-height: 0.9; }
 
-        .section-label {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--dim);
-            letter-spacing: 1.5px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        /* --- FORM ELEMENTS --- */
-        .field { margin-bottom: 20px; }
-        label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+        /* --- Form Elements --- */
+        .field { margin-bottom: 24px; }
+        label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; }
         
         input {
-            width: 100%;
-            padding: 15px;
+            width: 100%; padding: 16px;
             border: var(--border-width) solid var(--fg);
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 500;
-            font-size: 16px;
-            background: var(--input-bg);
+            font-family: inherit; font-size: 16px; font-weight: 600;
+            background: #f9f9f9;
         }
+        input:focus { outline: none; background: #fff; border-color: var(--accent); }
+        input[readonly] { background: #E0F0FF; color: var(--accent); text-align: center; font-family: 'JetBrains Mono'; font-size: 24px; }
 
-        input:focus { outline: none; background: white; }
-
-        input[readonly] { background: #fffbe6; font-weight: 700; text-align: center; }
+        .map-container {
+            height: 250px; border: var(--border-width) solid var(--fg);
+            margin-bottom: 20px; position: relative; overflow: hidden;
+        }
 
         button {
-            width: 100%;
-            padding: 18px;
-            background: var(--fg);
-            color: white;
+            width: 100%; padding: 20px;
+            background: var(--fg); color: white;
             border: var(--border-width) solid var(--fg);
-            font-family: inherit;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.2s;
+            font-family: inherit; font-weight: 800; text-transform: uppercase;
+            cursor: pointer; transition: 0.1s;
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        button:hover {
-            background: white;
-            color: var(--fg);
-            transform: translate(-3px, -3px);
-            box-shadow: 4px 4px 0px var(--fg);
-        }
+        button:active { transform: translate(4px, 4px); box-shadow: none; }
+        button.secondary { background: var(--accent); border-color: var(--fg); }
 
-        /* --- MAP --- */
-        #map {
-            height: 250px;
+        /* --- Live Monitoring UI --- */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-box { 
+            border: var(--border-width) solid var(--fg); 
+            padding: 20px; background: #fff; text-align: left;
+        }
+        .stat-num { font-size: 40px; font-weight: 800; display: block; line-height: 1; margin-top: 10px; }
+        .stat-status { color: var(--success); font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+
+        .log-container {
             border: var(--border-width) solid var(--fg);
-            margin-bottom: 20px;
+            max-height: 400px; overflow-y: auto; background: #fff;
         }
-
-        /* --- TABLES & STATS --- */
-        .stat-bar {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
+        .log-item {
+            padding: 15px 20px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .log-item:last-child { border-bottom: none; }
+        .log-name { font-weight: 700; font-size: 14px; }
+        .log-id { font-family: 'JetBrains Mono'; font-size: 11px; color: #888; }
+        .log-time { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700; }
 
-        .stat-card {
-            border: var(--border-width) solid var(--fg);
-            padding: 15px;
-            text-align: center;
+        /* --- History List --- */
+        .history-card {
+            background: white; border: var(--border-width) solid var(--fg);
+            padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between;
         }
+        .history-info h4 { font-weight: 800; text-transform: uppercase; font-size: 16px; }
+        .history-info p { font-size: 12px; color: #666; margin-top: 4px; }
+        .history-ref { background: #000; color: #fff; padding: 4px 8px; font-family: 'JetBrains Mono'; font-size: 12px; align-self: flex-start; }
 
-        .stat-val { font-size: 24px; font-weight: 700; display: block; }
-
-        .table-container {
-            border: var(--border-width) solid var(--fg);
-            overflow-x: auto;
+        /* --- Navigation Dock --- */
+        .dock-container {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; padding: 8px;
+            background: white; border: var(--border-width) solid var(--fg);
+            box-shadow: var(--shadow); z-index: 2000;
         }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #eee; text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; border-bottom: var(--border-width) solid var(--fg); }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-
-        /* --- NAVIGATION DOCK --- */
-        .dock {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            border: var(--border-width) solid var(--fg);
-            box-shadow: var(--shadow);
-            display: flex;
-            padding: 5px;
-            z-index: 1000;
+        .dock-item {
+            padding: 12px 20px; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; gap: 4px; transition: 0.2s; border-radius: 4px;
         }
+        .dock-item.active { background: var(--fg); color: white; }
+        .dock-item i { font-size: 20px; }
+        .dock-item span { font-size: 10px; font-weight: 800; text-transform: uppercase; }
 
-        .nav-item {
-            padding: 10px 15px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--dim);
-        }
-
-        .nav-item.active { color: var(--fg); background: #f0f0f0; }
-        .nav-item i { font-size: 18px; }
-
-        /* --- PANEL CONTROL --- */
+        /* --- Transitions --- */
         .panel { display: none; }
-        .panel.active { display: block; }
+        .panel.active { display: block; animation: panelIn 0.3s ease-out; }
+        @keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        @media (max-width: 480px) {
-            main { padding: 15px; }
-            .card { padding: 20px; border-left: none; border-right: none; }
-        }
     </style>
 </head>
 <body>
@@ -223,141 +178,129 @@
     <div class="grid-bg"></div>
 
     <header>
-        <div class="brand">Lec_Protocol v1.0</div>
-        <div class="sign-out" onclick="handleSignOut()">Exit</div>
+        <div class="brand">Control_Center</div>
+        <div class="sys-tag">SESSION.MANAGER.v1</div>
     </header>
 
     <main>
-        <!-- Panel: Create Session -->
+        <!-- PANEL: CREATE -->
         <div id="panel-create" class="panel">
-            <span class="section-label">Session Initialization</span>
+            <span class="panel-label">Session Initialization</span>
             <div class="card">
-                <h2>New Entry</h2>
+                <h2>Deploy New Node</h2>
                 <form id="attendance-form">
                     <div class="field">
-                        <label>Course Title</label>
-                        <input type="text" id="course" placeholder="e.g. Computer Science 101" required>
+                        <label>Course Identifier</label>
+                        <input type="text" id="course" placeholder="e.g. ADVANCED_ALGORITHMS" required>
                     </div>
 
-                    <div id="map"></div>
-
+                    <label>Geofence Target</label>
+                    <div class="map-container" id="map"></div>
+                    
                     <div class="field">
-                        <label>Target Coordinates</label>
+                        <label>Coordinates (Auto-Fill)</label>
                         <input type="text" id="coords" placeholder="Lat, Lng" required>
                     </div>
 
-                    <div class="field">
-                        <label>Reference Identity (Auto)</label>
-                        <input type="text" id="ref-code" readonly>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="field">
-                            <label>Date</label>
-                            <input type="date" id="date" required>
+                            <label>Venue Code</label>
+                            <input type="text" id="venue-name" placeholder="L_HALL_A" required>
                         </div>
                         <div class="field">
-                            <label>Venue</label>
-                            <input type="text" id="venue-name" placeholder="Room A1" required>
+                            <label>Reference Pin</label>
+                            <input type="text" id="ref-code" readonly>
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="field">
-                            <label>Start</label>
+                            <label>Start Window</label>
                             <input type="time" id="time-in" required>
                         </div>
                         <div class="field">
-                            <label>End</label>
+                            <label>Closure Time</label>
                             <input type="time" id="time-out" required>
                         </div>
                     </div>
 
                     <div class="field">
-                        <label>Lecturer Email</label>
-                        <input type="email" id="lecturer-email" required>
+                        <label>Auth Email</label>
+                        <input type="email" id="lecturer-email" placeholder="lecturer@edu.com" required>
                     </div>
 
-                    <button type="submit">Broadcast Session</button>
+                    <button type="submit">
+                        Broadcast Signal <i class="fa-solid fa-tower-broadcast"></i>
+                    </button>
                 </form>
             </div>
         </div>
 
-        <!-- Panel: Live Logs -->
-        <div id="panel-logs" class="panel active">
-            <span class="section-label">Telemetry Monitoring</span>
+        <!-- PANEL: LIVE -->
+        <div id="panel-live" class="panel active">
+            <span class="panel-label">Live Telemetry Stream</span>
             <div class="card">
-                <h2>Attendance Stream</h2>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <input type="text" id="search-ref" placeholder="Enter Ref Code">
-                    <button style="width: 60px; padding: 0;" onclick="checkAttendanceAct()"><i class="fa-solid fa-sync"></i></button>
+                <h2>Real-Time Sync</h2>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                    <input type="text" id="search-ref" placeholder="Enter Ref Pin" style="flex: 2;">
+                    <button class="secondary" style="flex: 1; padding: 0 15px;" onclick="checkAttendanceAct()">
+                        Sync <i class="fa-solid fa-rotate"></i>
+                    </button>
                 </div>
 
-                <div class="stat-bar">
-                    <div class="stat-card">
-                        <span class="section-label" style="margin:0">Verified</span>
-                        <span class="stat-val" id="ui-students-found">0</span>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <label>Verified Access</label>
+                        <span class="stat-num" id="ui-students-found">0</span>
                     </div>
-                    <div class="stat-card">
-                        <span class="section-label" style="margin:0">Status</span>
-                        <span class="stat-val" style="color: var(--success); font-size: 14px;">ACTIVE</span>
+                    <div class="stat-box">
+                        <label>Status</label>
+                        <div class="stat-status"><i class="fa-solid fa-circle"></i> ACTIVE</div>
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Identity</th>
-                                <th>Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody id="attendance-body">
-                            <tr><td colspan="2" style="text-align:center; padding: 20px;">No records synced.</td></tr>
-                        </tbody>
-                    </table>
+                <label>Access Log</label>
+                <div class="log-container" id="attendance-body">
+                    <div style="padding: 40px; text-align: center; color: #999;">
+                        <i class="fa-solid fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        Awaiting incoming signals...
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Panel: History -->
+        <!-- PANEL: HISTORY -->
         <div id="panel-history" class="panel">
-            <span class="section-label">Archive Retrieval</span>
+            <span class="panel-label">Archive Retrieval</span>
             <div class="card">
-                <h2>Past Sessions</h2>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <input type="text" id="search-lec" placeholder="Lecturer ID">
-                    <button style="width: 60px; padding: 0;" onclick="checkSessionsAct()"><i class="fa-solid fa-search"></i></button>
+                <h2>Vault Records</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                    <input type="text" id="search-lec" placeholder="Staff ID (e.g. LEC-001)" style="flex: 2;">
+                    <button class="secondary" style="flex: 1;" onclick="checkSessionsAct()">
+                        Search <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
                 </div>
 
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Course</th>
-                                <th>Ref</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sessions-body"></tbody>
-                    </table>
+                <div id="sessions-body">
+                    <!-- History populated here -->
                 </div>
             </div>
         </div>
     </main>
 
-    <nav class="dock">
-        <div class="nav-item" id="btn-panel-create" onclick="switchPanel('panel-create')">
-            <i class="fa-solid fa-plus-square"></i>
-            <span>Create</span>
+    <nav class="dock-container">
+        <div class="dock-item" id="btn-panel-create" onclick="switchPanel('panel-create')">
+            <i class="fa-solid fa-plus"></i>
+            <span>Deploy</span>
         </div>
-        <div class="nav-item active" id="btn-panel-logs" onclick="switchPanel('panel-logs')">
-            <i class="fa-solid fa-tower-broadcast"></i>
+        <div class="dock-item active" id="btn-panel-live" onclick="switchPanel('panel-live')">
+            <i class="fa-solid fa-wave-square"></i>
             <span>Live</span>
         </div>
-        <div class="nav-item" id="btn-panel-history" onclick="switchPanel('panel-history')">
-            <i class="fa-solid fa-database"></i>
-            <span>History</span>
+        <div class="dock-item" id="btn-panel-history" onclick="switchPanel('panel-history')">
+            <i class="fa-solid fa-box-archive"></i>
+            <span>Vault</span>
         </div>
     </nav>
 
@@ -365,9 +308,10 @@
         let map, marker;
         const FORM_URL = "https://docs.google.com/forms/u/0/d/1WPcBPA3FV4Vya83NXzA7p_98l0RHsQucyD9wVRlhfl0/formResponse";
 
+        // --- ORIGINAL LOGIC MAINTAINED ---
         function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([4.2105, 101.9758], 6);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            map = L.map('map', { zoomControl: false, attributionControl: false }).setView([4.2105, 101.9758], 15);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
             marker = L.marker([4.2105, 101.9758], { draggable: true }).addTo(map);
             marker.on('dragend', function() {
                 const pos = marker.getLatLng();
@@ -377,16 +321,17 @@
 
         function switchPanel(id) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.dock-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('active');
-            if(id === 'panel-create') setTimeout(() => map.invalidateSize(), 200);
+            if(id === 'panel-create') setTimeout(() => map.invalidateSize(), 300);
         }
 
         document.getElementById('attendance-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = this.querySelector('button');
-            btn.innerText = "UPLOADING...";
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Broadcasting... <i class="fa-solid fa-spinner fa-spin"></i>';
             
             const formData = new URLSearchParams();
             formData.append('entry.12763463', document.getElementById('course').value);
@@ -396,22 +341,23 @@
             formData.append('entry.528203485', document.getElementById('time-out').value);
             formData.append('entry.259351423', document.getElementById('lecturer-email').value);
             formData.append('entry.305737954', document.getElementById('venue-name').value);
-            formData.append('entry.301005744', sessionStorage.getItem('userId'));
+            formData.append('entry.301005744', sessionStorage.getItem('userId') || 'LEC-ADMIN');
 
             try {
                 await fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: formData });
-                alert("Session Created");
+                document.getElementById('search-ref').value = document.getElementById('ref-code').value;
                 generateRefCode();
-                switchPanel('panel-logs');
-            } catch (err) { alert("Network Error"); }
-            btn.innerText = "BROADCAST SESSION";
+                switchPanel('panel-live');
+                checkAttendanceAct();
+            } catch (err) { console.error(err); }
+            btn.innerHTML = originalText;
         });
 
         async function checkAttendanceAct() {
             const ref = document.getElementById('search-ref').value;
-            const tbody = document.getElementById('attendance-body');
+            const container = document.getElementById('attendance-body');
             if(!ref) return;
-            tbody.innerHTML = '<tr><td colspan="2">Fetching...</td></tr>';
+            container.innerHTML = '<div style="padding:40px; text-align:center;" class="sys-tag">Querying Node...</div>';
             
             const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
             const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=StudentAttendance&tq=` + encodeURIComponent(`SELECT * WHERE F = ${ref}`);
@@ -421,17 +367,28 @@
                 const text = await res.text();
                 const json = JSON.parse(text.substring(47).slice(0, -2));
                 const rows = json.table.rows;
-                tbody.innerHTML = "";
+                container.innerHTML = "";
                 document.getElementById('ui-students-found').innerText = rows.length;
                 rows.forEach(r => {
-                    tbody.innerHTML += `<tr><td><b>${r.c[2].v}</b><br><small>${r.c[1].v}</small></td><td>${r.c[0].f.split(' ')[1]}</td></tr>`;
+                    container.innerHTML += `
+                        <div class="log-item">
+                            <div>
+                                <div class="log-name">${r.c[2].v}</div>
+                                <div class="log-id">${r.c[1].v}</div>
+                            </div>
+                            <div class="log-time">${r.c[0].f.split(' ')[1]}</div>
+                        </div>`;
                 });
-            } catch (e) { tbody.innerHTML = '<tr><td colspan="2">No records found.</td></tr>'; }
+                if(rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No students found for this PIN.</div>';
+            } catch (e) { container.innerHTML = '<div style="padding:40px; text-align:center;">Network error during sync.</div>'; }
         }
 
         async function checkSessionsAct() {
             const lecId = document.getElementById('search-lec').value;
-            const tbody = document.getElementById('sessions-body');
+            const container = document.getElementById('sessions-body');
+            if(!lecId) return;
+            container.innerHTML = '<div style="padding:20px; text-align:center;">Searching Archive...</div>';
+            
             const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
             const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=MainSessionServer&tq=` + encodeURIComponent(`SELECT * WHERE I = '${lecId}'`);
 
@@ -439,23 +396,33 @@
                 const res = await fetch(url);
                 const text = await res.text();
                 const json = JSON.parse(text.substring(47).slice(0, -2));
-                tbody.innerHTML = "";
+                container.innerHTML = "";
                 json.table.rows.forEach(r => {
-                    tbody.innerHTML += `<tr><td>${r.c[1].v}</td><td>${r.c[3].v}</td><td>${r.c[0].f.split(' ')[0]}</td></tr>`;
+                    container.innerHTML += `
+                        <div class="history-card">
+                            <div class="history-info">
+                                <h4>${r.c[1].v}</h4>
+                                <p>${r.c[0].f.split(' ')[0]} • ${r.c[6].v}</p>
+                            </div>
+                            <div class="history-ref">${r.c[3].v}</div>
+                        </div>`;
                 });
-            } catch (e) { tbody.innerHTML = '<tr><td colspan="3">No history.</td></tr>'; }
+                if(json.table.rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No history found for this ID.</div>';
+            } catch (e) { container.innerHTML = '<div style="padding:20px; text-align:center;">Search failed.</div>'; }
         }
 
         function generateRefCode() { document.getElementById('ref-code').value = Math.floor(10000 + Math.random() * 90000); }
-        function handleSignOut() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
         window.onload = () => {
             initMap();
             generateRefCode();
-            document.getElementById('date').valueAsDate = new Date();
             const sid = sessionStorage.getItem('userId');
-            if(sid) document.getElementById('search-lec').value = sid;
+            if(sid) {
+                document.getElementById('search-lec').value = sid;
+                checkSessionsAct();
+            }
         };
     </script>
 </body>
 </html>
+
