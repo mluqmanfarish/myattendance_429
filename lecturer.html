@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lecturer Portal | Attendance</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-    
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -19,81 +21,286 @@
     </script>
 
     <style>
-        :root { --primary: #0071E3; --bg: #F5F5F7; --card: #ffffff; --text: #1D1D1F; --secondary: #86868B; }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-        
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+        :root {
+            --primary: #0071E3;
+            --bg: #F5F5F7;
+            --card: #ffffff;
+            --text: #1D1D1F;
+            --secondary: #86868B;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
         /* --- MOBILE NAVIGATION (BOTTOM BAR) --- */
-        nav { 
-            position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(20px); border-top: 1px solid rgba(0,0,0,0.05); 
-            display: flex; justify-content: space-around; padding: 12px 0; z-index: 2000; 
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 2000;
         }
-        nav h1 { display: none; } /* Hidden on mobile */
-        nav button { 
-            all: unset; display: flex; flex-direction: column; align-items: center; 
-            font-size: 10px; font-weight: 600; cursor: pointer; color: var(--secondary); transition: 0.2s; 
+
+        nav h1 {
+            display: none;
         }
-        nav button.active { color: var(--primary); }
+
+        /* Hidden on mobile */
+        nav button {
+            all: unset;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--secondary);
+            transition: 0.2s;
+        }
+
+        nav button.active {
+            color: var(--primary);
+        }
 
         /* --- MAIN CONTENT --- */
-        main { flex: 1; padding: 20px; padding-bottom: 100px; width: 100%; max-width: 800px; margin: 0 auto; }
-        h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
-        
-        .form-row { display: flex; gap: 12px; }
-        .form-group { margin-bottom: 15px; flex: 1; }
-        label { display: block; font-size: 11px; font-weight: 700; color: var(--secondary); margin-bottom: 6px; text-transform: uppercase; }
-        input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #D2D2D7; font-size: 15px; font-family: inherit; outline: none; }
-        input:focus { border-color: var(--primary); }
-        input[readonly] { background: #FBFBFD; color: var(--primary); font-weight: 700; }
+        main {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 100px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #D2D2D7;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        input[readonly] {
+            background: #FBFBFD;
+            color: var(--primary);
+            font-weight: 700;
+        }
 
         /* --- MAP AREA --- */
-        #map-container { position: relative; margin-bottom: 15px; }
-        #map { height: 250px; width: 100%; border-radius: 15px; border: 1px solid #D2D2D7; z-index: 1; }
-        .map-hint { font-size: 11px; color: var(--secondary); margin: 8px 0; display: block; }
-        
-        .coord-input-area { display: flex; gap: 8px; margin-top: 8px; }
+        #map-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
 
-        .submit-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        #map {
+            height: 250px;
+            width: 100%;
+            border-radius: 15px;
+            border: 1px solid #D2D2D7;
+            z-index: 1;
+        }
+
+        .map-hint {
+            font-size: 11px;
+            color: var(--secondary);
+            margin: 8px 0;
+            display: block;
+        }
+
+        .coord-input-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+            margin-bottom: 2rem;
+        }
 
         /* --- TABLE AREA --- */
-        .table-container { width: 100%; overflow-x: auto; border-radius: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
-        th { background: #FBFBFD; text-align: left; padding: 12px; color: var(--secondary); font-weight: 600; }
-        td { padding: 12px; border-top: 1px solid #F5F5F7; }
-        .ref-pill { background: rgba(0, 113, 227, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-weight: 700; }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 20px;
+        }
 
-        .panel { display: none; }
-        .panel.active { display: block; animation: fadeIn 0.3s ease; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 13px;
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        th {
+            background: #FBFBFD;
+            text-align: left;
+            padding: 12px;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-top: 1px solid #F5F5F7;
+        }
+
+        .ref-pill {
+            background: rgba(0, 113, 227, 0.1);
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         /* --- DESKTOP ADAPTATION --- */
         @media (min-width: 768px) {
-            body { flex-direction: row; }
-            nav { 
-                width: 240px; height: 100vh; position: sticky; top: 0; flex-direction: column; 
-                justify-content: flex-start; padding: 40px 20px; border-right: 1px solid rgba(0,0,0,0.05); border-top: none; 
+            body {
+                flex-direction: row;
             }
-            nav h1 { display: block; font-size: 20px; margin-bottom: 40px; color: var(--primary); }
-            nav button { flex-direction: row; font-size: 14px; padding: 12px; gap: 10px; border-radius: 12px; }
-            nav button.active { background: var(--primary); color: white; }
-            main { padding: 60px; }
-            #map { height: 350px; }
+
+            nav {
+                width: 240px;
+                height: 100vh;
+                position: sticky;
+                top: 0;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 40px 20px;
+                border-right: 1px solid rgba(0, 0, 0, 0.05);
+                border-top: none;
+            }
+
+            nav h1 {
+                display: block;
+                font-size: 20px;
+                margin-bottom: 40px;
+                color: var(--primary);
+            }
+
+            nav button {
+                flex-direction: row;
+                font-size: 14px;
+                padding: 12px;
+                gap: 10px;
+                border-radius: 12px;
+            }
+
+            nav button.active {
+                background: var(--primary);
+                color: white;
+            }
+
+            main {
+                padding: 60px;
+            }
+
+            #map {
+                height: 350px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <nav>
         <h1>Lecturer Hub</h1>
-        <button id="btn-add" class="active" onclick="switchPanel('add')">
+        <button id="btn-add-attendance-panel" class="active" onclick="switchPanel('add-attendance-panel')">
             <span>➕</span> Add Session
         </button>
-        <button id="btn-view" onclick="switchPanel('view')">
+        <button id="btn-view-attendance-panel" onclick="switchPanel('view-attendance-panel')">
             <span>📋</span> Records
+        </button>
+        <button id="btn-view-session-panel" onclick="switchPanel('view-session-panel')">
+            <span>📋</span> Sessions
         </button>
         <button onclick="handleSignOut()" style="color: #FF3B30;">
             <span>🚪</span> Sign Out
@@ -109,26 +316,28 @@
                         <label>Course Name</label>
                         <input type="text" id="course" placeholder="e.g. Data Structures" required>
                     </div>
-                    
+
                     <div id="map-container">
                         <label>Classroom Location</label>
                         <div id="map"></div>
                         <span class="map-hint">🔍 Search, Drag marker, or type coordinates below:</span>
-                        
+
                         <div class="coord-input-area">
                             <input type="text" id="coords" placeholder="Lat, Lng" required>
-                            <button type="button" onclick="manualUpdateMap()" style="width: 80px; padding: 0 5px; font-size: 11px; border-radius: 8px; border: 1px solid #ddd; background: #eee;">Apply</button>
+                            <button type="button" onclick="manualUpdateMap()"
+                                style="width: 80px; padding: 0 5px; font-size: 11px; border-radius: 8px; border: 1px solid #ddd; background: #eee;">Apply</button>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Ref Code</label>
+                            <label>Ref Code (Auto-generated)</label>
                             <input type="text" id="ref-code" readonly>
                         </div>
                         <div class="form-group">
                             <label>Session Date</label>
                             <input type="date" id="date" required>
+
                         </div>
                     </div>
 
@@ -141,6 +350,14 @@
                             <label>Time End</label>
                             <input type="time" id="time-out" required>
                         </div>
+                        <div class="form-group">
+                            <label>Your Email</label>
+                            <input type="email" id="lecturer-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Venue Name</label>
+                            <input type="text" id="venue-name" required>
+                        </div>
                     </div>
 
                     <button type="submit" class="submit-btn">Create GPS Boundary</button>
@@ -152,16 +369,51 @@
             <h2>Attendance Records</h2>
             <div class="card table-container">
                 <table>
+                    <div class="form-group">
+                        <label>SEARCH BY REFERENCE CODE</label>
+                        <input type="text" id="search-ref" placeholder="Enter Reference Code">
+                        <button onclick="checkAttendanceAct()" class="submit-btn">
+                            Search</button>
+                        <label id="numberOfStudents"></label>
+                    </div>
                     <thead>
                         <tr>
-                            <th>Course</th>
-                            <th>Ref</th>
-                            <th>GPS</th>
-                            <th>Window</th>
+                            <th>Timestamp</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Distance</th>
+                            <th>Student Location</th>
                         </tr>
                     </thead>
                     <tbody id="attendance-body">
-                        </tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-session-panel" class="panel">
+            <h2>Session Records</h2>
+            <div class="card table-container">
+                <table>
+                    <div class="form-group">
+                        <label>SEARCH BY LECTURER ID</label>
+                        <input type="text" id="search-lec" placeholder="Enter Lecturer ID">
+                         <button onclick="checkSessionsAct()" class="submit-btn">
+                            Search</button>
+                        <label id="numberOfSessions"></label>
+                    </div>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Course Name</th>
+                            <th>Coordinate</th>
+                            <th>Reference Code</th>
+                            <th>Time In</th>
+                            <th>Time Out</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessions-body">
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -173,27 +425,27 @@
 
         function initMap() {
             // Default: Malaysia center
-            const defaultPos = [4.2105, 101.9758]; 
+            const defaultPos = [4.2105, 101.9758];
             map = L.map('map').setView(defaultPos, 6);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(map);
 
-            marker = L.marker(defaultPos, {draggable: true}).addTo(map);
+            marker = L.marker(defaultPos, { draggable: true }).addTo(map);
 
             // Geocoder (Search)
             geocoder = L.Control.geocoder({
                 defaultMarkGeocode: false,
                 placeholder: "Search building...",
             })
-            .on('markgeocode', function(e) {
-                const center = e.geocode.center;
-                map.setView(center, 18);
-                marker.setLatLng(center);
-                updateCoordInput(center.lat, center.lng);
-            })
-            .addTo(map);
+                .on('markgeocode', function (e) {
+                    const center = e.geocode.center;
+                    map.setView(center, 18);
+                    marker.setLatLng(center);
+                    updateCoordInput(center.lat, center.lng);
+                })
+                .addTo(map);
 
             // Click map to move marker
             map.on('click', (e) => {
@@ -239,7 +491,7 @@
         function switchPanel(panelName) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById(panelName + '-attendance-panel').classList.add('active');
+            document.getElementById(panelName).classList.add('active');
             document.getElementById('btn-' + panelName).classList.add('active');
             if (panelName === 'add') setTimeout(() => map.invalidateSize(), 300);
         }
@@ -252,6 +504,12 @@
             formData.append('entry.1749226560', data.ref);
             formData.append('entry.2127034561', data.timeIn);
             formData.append('entry.528203485', data.timeOut);
+            formData.append('entry.259351423', data.lecturerEmail);
+            formData.append('entry.305737954', data.venueName);
+            formData.append('entry.301005744', sessionStorage.getItem('userId'));
+
+
+
 
             try {
                 await fetch(FORM_URL, {
@@ -263,40 +521,181 @@
             } catch (e) { console.error("Log error", e); }
         }
 
-        document.getElementById('attendance-form').addEventListener('submit', async function(e) {
+        document.getElementById('attendance-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             const sessionData = {
                 course: document.getElementById('course').value,
                 coords: document.getElementById('coords').value,
                 ref: document.getElementById('ref-code').value,
                 timeIn: document.getElementById('time-in').value,
-                timeOut: document.getElementById('time-out').value
+                timeOut: document.getElementById('time-out').value,
+                lecturerEmail: document.getElementById('lecturer-email').value,
+                venueName: document.getElementById('venue-name').value,
             };
 
             await submitSessionLog(sessionData);
 
-            // Add to local UI table
-            const tbody = document.getElementById('attendance-body');
-            tbody.innerHTML += `<tr>
-                <td>${sessionData.course}</td>
-                <td><span class="ref-pill">${sessionData.ref}</span></td>
-                <td><code style="font-size:10px">${sessionData.coords}</code></td>
-                <td>${sessionData.timeIn}-${sessionData.timeOut}</td>
-            </tr>`;
 
             alert("Session Active! Boundary Logged to System.");
             this.reset();
             generateRefCode();
-            switchPanel('view');
+            switchPanel('view-session-panel');
         });
 
         function generateRefCode() {
             document.getElementById('ref-code').value = Math.floor(10000 + Math.random() * 90000);
         }
 
+        let sessionLogs = [];
+
         function handleSignOut() {
             if (confirm("Sign out?")) { sessionStorage.clear(); window.location.href = 'index.html'; }
         }
+
+        async function checkAttendance(targetRefCode) {
+    const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
+    const sheetName = "StudentAttendance"; 
+
+    const queryString = "SELECT * WHERE F = " + targetRefCode; 
+    const encodedQuery = encodeURIComponent(queryString);
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${encodedQuery}`;
+
+    try {
+        const response = await fetch(url);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        if (rows && rows.length > 0) {
+            // Use .map to process EVERY row found, not just rows[0]
+            return rows.map(r => {
+                const targetRow = r.c;
+                let rawDate = targetRow[0] ? targetRow[0].v : null;
+                let cleanTimestamp = rawDate;
+
+                if (typeof rawDate === 'string' && rawDate.includes('Date')) {
+                    const parts = rawDate.match(/\d+/g).map(Number);
+                    cleanTimestamp = `${parts[2]}/${parts[1]+1}/${parts[0]} ${parts[3]}:${parts[4]}:${parts[5]}`;
+                }
+
+                return {
+                    numberOfStudents: rows.length, // Total matches for this ref code
+                    timestamp: cleanTimestamp,
+                    studentId: targetRow[1] ? targetRow[1].v : null,
+                    studentName: targetRow[2] ? targetRow[2].v : null,
+                    distance: targetRow[3] ? targetRow[3].v : null,
+                    location: targetRow[4] ? targetRow[4].v : null
+                };
+            });
+        } else {
+            console.log("No records found.");
+            return []; // Return empty array if no matches
+        }
+    } catch (error) {
+        console.error("Error fetching rows:", error);
+        return [];
+    }
+}
+
+async function checkSessions(targetLecID) {
+    const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
+    const sheetName = "MainSessionServer"; 
+
+// Change this line in your checkSessions function:
+    const queryString = "SELECT * WHERE I = '" + targetLecID + "'";    
+    const encodedQuery = encodeURIComponent(queryString);
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${encodedQuery}`;
+
+    try {
+        const response = await fetch(url);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        if (rows && rows.length > 0) {
+            // Use .map to process EVERY row found, not just rows[0]
+            return rows.map(r => {
+                const targetRow = r.c;
+                let rawDate = targetRow[0] ? targetRow[0].v : null;
+                let cleanTimestamp = rawDate;
+
+                if (typeof rawDate === 'string' && rawDate.includes('Date')) {
+                    const parts = rawDate.match(/\d+/g).map(Number);
+                    cleanTimestamp = `${parts[2]}/${parts[1]+1}/${parts[0]} ${parts[3]}:${parts[4]}:${parts[5]}`;
+                }
+
+                return {
+                    numberOfSessions: rows.length, // Total matches for this ref code
+                    timestamp: cleanTimestamp,
+                    courseName: targetRow[1] ? targetRow[1].v : null,
+                    coordinate: targetRow[2] ? targetRow[2].v : null,
+                    refCode: targetRow[3] ? targetRow[3].v : null,
+                    time_in: targetRow[4] ? targetRow[4].v : null,
+                    time_out: targetRow[5] ? targetRow[5].v : null
+                };
+            });
+        } else {
+            console.log("No records found.");
+            return []; // Return empty array if no matches
+        }
+    } catch (error) {
+        console.error("Error fetching rows:", error);
+        return [];
+    }
+}
+        // Usage:
+        async function checkAttendanceAct() {
+    // Get the array of all matching records[cite: 1]
+    const attendanceLogs = await checkAttendance(document.getElementById('search-ref').value);
+    const tableBody = document.getElementById('attendance-body');
+    
+    // Clear the table before adding new results
+    tableBody.innerHTML = ""; 
+
+    if (attendanceLogs && attendanceLogs.length > 0) {
+        // Loop through each record and append it to the table
+        document.getElementById('numberOfStudents').textContent = `Total Records Found: ${attendanceLogs[0].numberOfStudents}`;
+        attendanceLogs.forEach(log => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${log.timestamp || 'N/A'}</td>
+                    <td>${log.studentId || 'N/A'}</td>
+                    <td>${log.studentName || 'N/A'}</td>
+                    <td>${log.distance || 'N/A'}</td>
+                    <td>${log.location || 'N/A'}</td>
+                </tr>`;
+        });
+    } else {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No records found.</td></tr>`;
+    }
+}
+
+   async function checkSessionsAct() {
+    // Get the array of all matching records[cite: 1]
+    const sessionsLogs = await checkSessions(document.getElementById('search-lec').value);
+    const tableBody = document.getElementById('sessions-body');
+    
+    // Clear the table before adding new results
+    tableBody.innerHTML = ""; 
+
+    if (sessionsLogs && sessionsLogs.length > 0) {
+        // Loop through each record and append it to the table
+        document.getElementById('numberOfSessions').textContent = `Total Records Found: ${sessionsLogs[0].numberOfSessions}`;
+        sessionsLogs.forEach(log => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${log.timestamp || 'N/A'}</td>
+                    <td>${log.courseName || 'N/A'}</td>
+                    <td>${log.coordinate || 'N/A'}</td>
+                    <td>${log.refCode || 'N/A'}</td>
+                    <td>${log.time_in || 'N/A'}</td>
+                    <td>${log.time_out || 'N/A'}</td>
+                </tr>`;
+        });
+    } else {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No records found.</td></tr>`;
+    }
+}
 
         window.onload = () => {
             initMap();
@@ -305,4 +704,5 @@
         };
     </script>
 </body>
+
 </html>
