@@ -10,7 +10,7 @@
         (function protectPage() {
             const role = sessionStorage.getItem('userRole');
             const userId = sessionStorage.getItem('userId');
-            const latestTimeSuccess = sessionStorage.getItem('latestTimeSuccess');
+            const latestTimeSuccess = localStorage.getItem('latestTimeSuccess');
             const COOLDOWN_PERIOD = 30 * 60 * 1000; // 5 minutes in milliseconds
             const durationSinceLastSuccess = Date.now() - (latestTimeSuccess || 0);
 
@@ -255,7 +255,7 @@ async function handleAttendance() {
                 location: `${lat}, ${lon}`,
                 refCode: sessionStorage.getItem('refCode')
             });
-            sessionStorage.setItem('latestTimeSuccess', Date.now());
+            localStorage.setItem('latestTimeSuccess', Date.now());
             setUIState('success', 'Check-In Successful', 'Verified');
         } else {
             setUIState('error', 'Too far from venue', 'Retry');
