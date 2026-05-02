@@ -4,19 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campus Check-In | Student</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     
     <script>
         (function protectPage() {
             const role = sessionStorage.getItem('userRole');
             const userId = sessionStorage.getItem('userId');
             const latestTimeSuccess = localStorage.getItem('latestTimeSuccess');
-            const COOLDOWN_PERIOD = 30 * 60 * 1000; // 5 minutes in milliseconds
+            const COOLDOWN_PERIOD = 30 * 60 * 1000; 
             const durationSinceLastSuccess = Date.now() - (latestTimeSuccess || 0);
 
             if (!role || !userId || role !== 'student') {
                 window.location.href = 'index.html';
-            }else if (durationSinceLastSuccess < COOLDOWN_PERIOD) {
+            } else if (durationSinceLastSuccess < COOLDOWN_PERIOD) {
                 const remainingTime = Math.ceil((COOLDOWN_PERIOD - durationSinceLastSuccess) / 60000);
                 alert(`You have recently marked attendance. Please wait ${remainingTime} minutes before trying again.`);
                 window.location.href = 'index.html';
@@ -25,91 +27,205 @@
     </script>
 
     <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #000000;
+            --accent: #0071E3;
+            --success: #34C759;
+            --error: #FF3B30;
+            --border-width: 2px;
+            --shadow: 6px 6px 0px #000000;
+            --input-bg: #f4f4f4;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #F2F4F7;
-            color: #1D1D1F;
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg);
+            color: var(--fg);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
         }
-        body::before, body::after {
-            content: ''; position: absolute; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.6;
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
         }
-        body::before { width: 300px; height: 300px; background: #D4E4FF; top: -10%; left: -10%; }
-        body::after { width: 250px; height: 250px; background: #F0E6FF; bottom: -5%; right: -5%; }
 
         #attendance-card {
-            background-color: rgba(255, 255, 255, 0.8);
-            width: 90%;
-            max-width: 400px;
-            padding: 35px 25px;
-            border-radius: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.04);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            text-align: center;
+            width: 100%;
+            max-width: 440px;
+            background: white;
+            border: var(--border-width) solid var(--fg);
+            box-shadow: var(--shadow);
+            padding: 40px;
+            position: relative;
+            transition: all 0.3s ease;
         }
-        .status-visual { position: relative; width: 70px; height: 70px; margin: 0 auto 20px; display: flex; justify-content: center; align-items: center; }
-        .status-dot { width: 18px; height: 18px; background-color: #D1D1D6; border-radius: 50%; z-index: 2; transition: all 0.4s ease; }
-        .status-pulse { position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: #D1D1D6; opacity: 0.3; animation: pulse-idle 2.5s infinite; transition: all 0.4s ease; }
 
-        @keyframes pulse-idle { 0% { transform: scale(1); opacity: 0.4; } 100% { transform: scale(1.6); opacity: 0; } }
-        h2 { padding-bottom: 30px; font-weight: 700; font-size: 22px; margin-bottom: 20px; letter-spacing: -0.5px; }
-        .section-tag { font-size: 11px; font-weight: 700; color: #007AFF; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; text-align: left; padding-left: 5px; }
-        .info-list { text-align: left; margin-bottom: 20px; background: rgba(255,255,255,0.4); border-radius: 20px; padding: 8px 15px; }
-        .info-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.03); font-size: 13px; gap: 10px; }
-        .info-item:last-child { border-bottom: none; }
-        .info-label { color: #86868B; font-weight: 500; min-width: 90px; }
-        .info-value { color: #1D1D1F; font-weight: 600; text-align: right; line-height: 1.4; }
-
-        button { 
-            width: 100%; padding: 18px; border-radius: 18px; border: none; 
-            background-color: #000000; color: #FFFFFF; font-family: inherit; 
-            font-size: 16px; font-weight: 600; cursor: pointer; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        /* Status Visualizer */
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
         }
-        button:hover:not(:disabled) { transform: translateY(-2px); background-color: #1C1C1E; }
-        button:disabled { background-color: #E5E5EA; color: #ffffff; cursor: not-allowed; }
 
-        .is-loading .status-dot, .is-loading .status-pulse { background-color: #007AFF; }
-        .is-success h2 { color: #34C759; }
-        .is-success .status-dot, .is-success .status-pulse { background-color: #34C759; animation: none; }
-        .is-success button { background-color: #34C759; }
-        .is-error h2 { color: #FF3B30; }
-        .is-error .status-dot, .is-error .status-pulse { background-color: #FF3B30; animation: none; }
+        .status-dot-wrapper {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--fg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--fg);
+            transition: all 0.4s ease;
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        /* Information Blocks */
+        .section-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #888;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin: 25px 0 15px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .value {
+            font-weight: 700;
+            text-align: right;
+        }
+
+        /* Button Logic */
+        button {
+            width: 100%;
+            padding: 20px;
+            margin-top: 40px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: var(--border-width) solid var(--fg);
+            background: var(--fg);
+            color: white;
+        }
+
+        button:hover:not(:disabled) {
+            background: white;
+            color: var(--fg);
+            transform: translate(-3px, -3px);
+            box-shadow: 4px 4px 0px var(--fg);
+        }
+
+        button:disabled {
+            background: #eee;
+            border-color: #ccc;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        /* State Modifiers */
+        .is-loading .status-dot { background: var(--accent); animation: flash 1s infinite; }
+        .is-success { border-color: var(--success) !important; box-shadow: 6px 6px 0px var(--success) !important; }
+        .is-success .status-dot { background: var(--success); }
+        .is-success h2 { color: var(--success); }
+        .is-success button { background: var(--success); border-color: var(--success); }
+
+        .is-error { border-color: var(--error) !important; box-shadow: 6px 6px 0px var(--error) !important; }
+        .is-error .status-dot { background: var(--error); }
+        .is-error h2 { color: var(--error); }
+
+        @keyframes flash {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            #attendance-card { padding: 30px 20px; border: none; box-shadow: none; }
+            .grid-bg { display: none; }
+        }
     </style>
 </head>
 
 <body>
+    <div class="grid-bg"></div>
+
     <div id="attendance-card">
-        <div class="status-visual">
-            <div class="status-dot"></div>
-            <div class="status-pulse"></div>
+        <div class="status-container">
+            <div class="status-dot-wrapper">
+                <div class="status-dot"></div>
+            </div>
+            <h2 id="status-text">Station Ready</h2>
         </div>
-        <h2 id="status-text">Ready to Verify</h2>
-        <span class="section-tag">Student Info</span>
-        <div class="info-list">
-            <div class="info-item"><span class="info-label">Student ID</span><span id='student-id' class="info-value">---</span></div>
-            <div class="info-item"><span class="info-label">Student Name</span><span id='student-name' class="info-value">---</span></div>
-            <div class="info-item"><span class="info-label">Timestamp</span><span id="val-time" class="info-value">--:--</span></div>
-            <div class="info-item"><span class="info-label">Distance</span><span id="val-distance" class="info-value">--</span></div>
-            <div class="info-item"><span class="info-label">Your Location</span><span id="val-current-name" class="info-value">Not Detected</span></div>
+
+        <div class="section-header">Student Profile</div>
+        <div class="data-grid">
+            <div class="data-row"><span class="label">ID</span><span id='student-id' class="value">---</span></div>
+            <div class="data-row"><span class="label">Name</span><span id='student-name' class="value">---</span></div>
+            <div class="data-row"><span class="label">Current Location</span><span id="val-current-name" class="value">Not Detected</span></div>
         </div>
-        <span class="section-tag">Attendance Details</span>
-        <div class="info-list">
-            <div class="info-item"><span class="info-label">Target Venue</span><span id="val-target-name" class="info-value">---</span></div>
-            <div class="info-item"><span class="info-label">Course Name</span><span id="val-course-name" class="info-value">---</span></div>
-            <div class="info-item"><span class="info-label">Ref Code</span><span id="val-ref-code" class="info-value">---</span></div>
+
+        <div class="section-header">Class Details</div>
+        <div class="data-grid">
+            <div class="data-row"><span class="label">Course</span><span id="val-course-name" class="value">---</span></div>
+            <div class="data-row"><span class="label">Target Venue</span><span id="val-target-name" class="value">---</span></div>
+            <div class="data-row"><span class="label">Distance</span><span id="val-distance" class="value">--</span></div>
+            <div class="data-row"><span class="label">Sync Time</span><span id="val-time" class="value">--:--</span></div>
+            <div class="data-row"><span class="label">Ref Code</span><span id="val-ref-code" class="value">---</span></div>
         </div>
-        <button id="action-btn" onclick="handleAttendance()">Mark Attendance</button>
+
+        <button id="action-btn" onclick="handleAttendance()">Confirm Attendance</button>
     </div>
+
 <script>
-const THRESHOLD_KM = 0.3; // 100 meters
+const THRESHOLD_KM = 0.3; 
 const FORM_URL = "https://docs.google.com/forms/u/0/d/1lWPkeQRomJdfuRU2ZzEmfDNVCPo8Lcw6LxK0Cv_PPkc/formResponse";
 
 let foundData = null;
@@ -122,7 +238,6 @@ document.getElementById('val-ref-code').innerText = sessionStorage.getItem('refC
 // ================= FETCH GOOGLE SHEET =================
 const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
 const sheetName = "MainSessionServer";
-
 const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
 fetch(url)
@@ -149,9 +264,6 @@ fetch(url)
     if (foundData) {
         document.getElementById("val-target-name").innerText = foundData.COORDINATE;
         document.getElementById("val-course-name").innerText = foundData.COURSE_NAME;
-        console.log("Data Found:", foundData);
-    } else {
-        console.log("No data found for REFCODE:", searchRef);
     }
 })
 .catch(err => console.error("Fetch error:", err));
@@ -166,20 +278,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-
-    const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) ** 2;
-
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const getCoords = () =>
-    new Promise((res, rej) =>
-        navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true })
-    );
+const getCoords = () => new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true }));
 
 function setUIState(state, message, btnLabel) {
     const card = document.getElementById("attendance-card");
@@ -198,7 +301,6 @@ function setUIState(state, message, btnLabel) {
 // ================= SEND =================
 async function sendToGoogleForm(data) {
     const formData = new URLSearchParams();
-
     formData.append('entry.1635954407', data.timestamp);
     formData.append('entry.533702816', data.studentId);
     formData.append('entry.1656191659', data.studentName);
@@ -206,45 +308,32 @@ async function sendToGoogleForm(data) {
     formData.append('entry.1461474313', data.location);
     formData.append('entry.532483027', data.refCode);
 
-
-    await fetch(FORM_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formData
-    });
-
+    await fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: formData });
     localStorage.setItem('lastAttendanceTime', Date.now().toString());
 }
 
 // ================= MAIN =================
 async function handleAttendance() {
-    setUIState('loading', 'Checking...', 'Please wait');
+    setUIState('loading', 'Syncing...', 'Validating');
 
     try {
         if (!foundData || !foundData.COORDINATE) {
-            setUIState('error', 'Venue not ready', 'Retry');
+            setUIState('error', 'Venue Missing', 'Retry');
             return;
         }
 
         const pos = await getCoords();
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
-
         const [latVenue, lonVenue] = parseCoordinate(foundData.COORDINATE);
-
         const d = calculateDistance(lat, lon, latVenue, lonVenue);
 
-        const timeNow = new Date().toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        const formattedDist =
-            d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(2)} km`;
+        const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const formattedDist = d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(2)} km`;
 
         document.getElementById("val-distance").innerText = formattedDist;
         document.getElementById("val-time").innerText = timeNow;
-        document.getElementById("val-current-name").innerText = `${lat}, ${lon}`;
+        document.getElementById("val-current-name").innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
 
         if (d <= THRESHOLD_KM) {
             await sendToGoogleForm({
@@ -256,14 +345,12 @@ async function handleAttendance() {
                 refCode: sessionStorage.getItem('refCode')
             });
             localStorage.setItem('latestTimeSuccess', Date.now());
-            setUIState('success', 'Check-In Successful', 'Verified');
+            setUIState('success', 'Verified', 'Success');
         } else {
-            setUIState('error', 'Too far from venue', 'Retry');
+            setUIState('error', 'Out of Range', 'Retry');
         }
-
     } catch (err) {
-        console.error(err);
-        setUIState('error', 'Location denied', 'Retry');
+        setUIState('error', 'Signal Lost', 'Retry');
     }
 }
 </script>
