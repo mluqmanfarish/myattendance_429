@@ -556,7 +556,7 @@
     const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
     const sheetName = "StudentAttendance"; 
 
-    const queryString = "SELECT * WHERE F = " + targetRefCode; 
+    const queryString = "SELECT * WHERE F =" + targetRefCode; 
     const encodedQuery = encodeURIComponent(queryString);
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}&tq=${encodedQuery}`;
 
