@@ -101,7 +101,7 @@
         <button id="action-btn" onclick="handleAttendance()">Mark Attendance</button>
     </div>
 <script>
-const THRESHOLD_KM = 0.1; // 100 meters
+const THRESHOLD_KM = 0.3; // 100 meters
 const FORM_URL = "https://docs.google.com/forms/u/0/d/1lWPkeQRomJdfuRU2ZzEmfDNVCPo8Lcw6LxK0Cv_PPkc/formResponse";
 
 let foundData = null;
@@ -113,7 +113,7 @@ document.getElementById('val-ref-code').innerText = sessionStorage.getItem('refC
 
 // ================= FETCH GOOGLE SHEET =================
 const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
-const sheetName = "Sheet1";
+const sheetName = "MainSessionServer";
 
 const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
@@ -196,7 +196,7 @@ async function sendToGoogleForm(data) {
     formData.append('entry.1656191659', data.studentName);
     formData.append('entry.1441013951', data.distance);
     formData.append('entry.1461474313', data.location);
-    formData.append('entry.532483027', data.location);
+    formData.append('entry.532483027', data.refCode);
 
 
     await fetch(FORM_URL, {
