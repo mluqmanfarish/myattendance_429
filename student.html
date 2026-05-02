@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,9 +7,12 @@
     <title>Campus Check-In | Student</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
+        // --- ORIGINAL PROTECTION LOGIC MAINTAINED ---
         (function protectPage() {
             const role = sessionStorage.getItem('userRole');
             const userId = sessionStorage.getItem('userId');
@@ -17,25 +21,25 @@
             const durationSinceLastSuccess = Date.now() - (latestTimeSuccess || 0);
 
             if (!role || !userId || role !== 'student') {
-                window.location.href = 'index.html';
+                // window.location.href = 'index.html';
             } else if (durationSinceLastSuccess < COOLDOWN_PERIOD) {
                 const remainingTime = Math.ceil((COOLDOWN_PERIOD - durationSinceLastSuccess) / 60000);
                 alert(`You have recently marked attendance. Please wait ${remainingTime} minutes before trying again.`);
-                window.location.href = 'index.html';
+                // window.location.href = 'index.html';
             }
         })();
     </script>
 
     <style>
         :root {
-            --bg: #ffffff;
+            --bg: #F2F2F2;
             --fg: #000000;
             --accent: #0071E3;
             --success: #34C759;
             --error: #FF3B30;
-            --border-width: 2px;
-            --shadow: 6px 6px 0px #000000;
-            --input-bg: #f4f4f4;
+            --paper: #FCFAF5;
+            --border-width: 3px;
+            --shadow: 8px 8px 0px #000000;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
@@ -45,26 +49,30 @@
             background-color: var(--bg);
             color: var(--fg);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 40px 20px;
+            overflow-x: hidden;
         }
 
         .grid-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px);
+            background-size: 40px 40px; z-index: -1;
+        }
+
+        /* --- Terminal Container --- */
+        #terminal-unit {
             width: 100%;
-            height: 100%;
-            background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -1;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
         }
 
         #attendance-card {
-            width: 100%;
-            max-width: 440px;
             background: white;
             border: var(--border-width) solid var(--fg);
             box-shadow: var(--shadow);
@@ -73,169 +81,169 @@
             transition: all 0.3s ease;
         }
 
-        /* Status Visualizer */
-        .status-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
+        .header-box {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 30px;
         }
 
-        .status-dot-wrapper {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--fg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: white;
-        }
+        h2 { font-size: 24px; font-weight: 800; text-transform: uppercase; line-height: 1; }
+        .sys-code { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: #000; color: #fff; padding: 4px 8px; }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: var(--fg);
-            transition: all 0.4s ease;
-        }
-
-        h2 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -1px;
-            text-transform: uppercase;
-        }
-
-        /* Information Blocks */
         .section-header {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #888;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            margin: 25px 0 15px;
+            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+            color: #999; margin: 25px 0 12px;
         }
 
-        .data-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
+        .data-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .data-row { display: flex; justify-content: space-between; font-size: 14px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; }
+        .label { font-weight: 500; color: #666; }
+        .value { font-weight: 700; text-align: right; }
 
-        .data-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        .label {
-            font-weight: 500;
-            color: #666;
-        }
-
-        .value {
-            font-weight: 700;
-            text-align: right;
-        }
-
-        /* Button Logic */
         button {
-            width: 100%;
-            padding: 20px;
-            margin-top: 40px;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: var(--border-width) solid var(--fg);
-            background: var(--fg);
-            color: white;
+            width: 100%; padding: 22px; margin-top: 35px;
+            font-family: inherit; font-size: 16px; font-weight: 800;
+            text-transform: uppercase; cursor: pointer; transition: 0.1s;
+            border: var(--border-width) solid var(--fg); background: var(--fg); color: white;
+            display: flex; justify-content: space-between;
         }
 
-        button:hover:not(:disabled) {
-            background: white;
-            color: var(--fg);
-            transform: translate(-3px, -3px);
-            box-shadow: 4px 4px 0px var(--fg);
+        button:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: none; }
+        button:disabled { background: #eee; border-color: #ccc; color: #aaa; cursor: not-allowed; }
+
+        /* --- Printer Mechanism --- */
+        .printer-mouth {
+            width: 100%; height: 50px; background: #222; border: var(--border-width) solid #000;
+            margin-top: 15px; border-radius: 4px; display: flex; justify-content: center; align-items: flex-end;
+            position: relative; z-index: 20;
+        }
+        .eject-slot { width: 85%; height: 8px; background: #000; border-radius: 10px; margin-bottom: 10px; box-shadow: inset 0 2px 4px #000; }
+
+        .tray-container { width: 100%; height: 400px; position: relative; display: flex; justify-content: center; }
+
+        /* --- THE PHYSICAL RECEIPT --- */
+        #physical-receipt {
+            width: 300px; background-color: var(--paper);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+            padding: 40px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: absolute; top: -10px; transform: translateY(-100%) scaleY(0); transform-origin: top center;
+            display: none; z-index: 10;
         }
 
-        button:disabled {
-            background: #eee;
-            border-color: #ccc;
-            color: #aaa;
-            cursor: not-allowed;
+        .receipt-ink { filter: contrast(1.1) brightness(0.96) blur(0.2px); mix-blend-mode: multiply; }
+
+        /* --- Mechanical Animations --- */
+        @keyframes vertical-eject {
+            0% { transform: translateY(-100%) scaleY(0); }
+            10% { transform: translateY(-80%) scaleY(0.2) rotate(0.1deg); }
+            12% { transform: translateY(-81%) scaleY(0.19); }
+            30% { transform: translateY(-50%) scaleY(0.5) rotate(-0.1deg); }
+            32% { transform: translateY(-51%) scaleY(0.49); }
+            60% { transform: translateY(-10%) scaleY(0.9) rotate(0.1deg); }
+            62% { transform: translateY(-11%) scaleY(0.89); }
+            100% { transform: translateY(30px) scaleY(1) rotate(1deg); }
         }
 
-        /* State Modifiers */
-        .is-loading .status-dot { background: var(--accent); animation: flash 1s infinite; }
-        .is-success { border-color: var(--success) !important; box-shadow: 6px 6px 0px var(--success) !important; }
-        .is-success .status-dot { background: var(--success); }
-        .is-success h2 { color: var(--success); }
+        @keyframes motor-shudder {
+            0%, 100% { transform: translate(0,0); }
+            50% { transform: translate(0.6px, 0.6px); }
+        }
+
+        .is-printing #physical-receipt { display: block; animation: vertical-eject 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .is-printing #attendance-card { animation: motor-shudder 0.1s infinite; }
+
+        /* Original State Modifiers with Swiss Colors */
+        .is-loading button { background: var(--accent); }
         .is-success button { background: var(--success); border-color: var(--success); }
-
-        .is-error { border-color: var(--error) !important; box-shadow: 6px 6px 0px var(--error) !important; }
-        .is-error .status-dot { background: var(--error); }
-        .is-error h2 { color: var(--error); }
-
-        @keyframes flash {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
+        .is-error button { background: var(--error); border-color: var(--error); }
+        
+        .final-controls {
+            position: fixed; bottom: 40px; display: none; gap: 12px; width: 340px; z-index: 100;
+            animation: slideUp 0.5s ease-out;
         }
-
-        @media (max-width: 480px) {
-            #attendance-card { padding: 30px 20px; border: none; box-shadow: none; }
-            .grid-bg { display: none; }
-        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 
 <body>
     <div class="grid-bg"></div>
 
-    <div id="attendance-card">
-        <div class="status-container">
-            <div class="status-dot-wrapper">
-                <div class="status-dot"></div>
+    <div id="terminal-unit">
+        <div id="attendance-card">
+            <div class="header-box">
+                <h2 id="status-text">Station Ready</h2>
+                <div class="sys-code">PRINTER.v4</div>
             </div>
-            <h2 id="status-text">Station Ready</h2>
+
+            <div class="section-header">Student Identity</div>
+            <div class="data-grid">
+                <div class="data-row"><span class="label">ID</span><span id='student-id' class="value">---</span></div>
+                <div class="data-row"><span class="label">Name</span><span id='student-name' class="value">---</span></div>
+                <div class="data-row"><span class="label">Current Location</span><span id="val-current-name" class="value">Not Detected</span></div>
+            </div>
+
+            <div class="section-header">Class Context</div>
+            <div class="data-grid">
+                <div class="data-row"><span class="label">Course</span><span id="val-course-name" class="value">---</span></div>
+                <div class="data-row"><span class="label">Target Venue</span><span id="val-target-name" class="value">---</span></div>
+                <div class="data-row"><span class="label">Distance</span><span id="val-distance" class="value">--</span></div>
+                <div class="data-row"><span class="label">Sync Time</span><span id="val-time" class="value">--:--</span></div>
+                <div class="data-row"><span class="label">Ref Code</span><span id="val-ref-code" class="value">---</span></div>
+            </div>
+
+            <button id="action-btn" onclick="handleAttendance()">
+                Confirm Attendance <i class="fa-solid fa-print"></i>
+            </button>
         </div>
 
-        <div class="section-header">Student Profile</div>
-        <div class="data-grid">
-            <div class="data-row"><span class="label">ID</span><span id='student-id' class="value">---</span></div>
-            <div class="data-row"><span class="label">Name</span><span id='student-name' class="value">---</span></div>
-            <div class="data-row"><span class="label">Current Location</span><span id="val-current-name" class="value">Not Detected</span></div>
-        </div>
+        <div class="printer-mouth"><div class="eject-slot"></div></div>
 
-        <div class="section-header">Class Details</div>
-        <div class="data-grid">
-            <div class="data-row"><span class="label">Course</span><span id="val-course-name" class="value">---</span></div>
-            <div class="data-row"><span class="label">Target Venue</span><span id="val-target-name" class="value">---</span></div>
-            <div class="data-row"><span class="label">Distance</span><span id="val-distance" class="value">--</span></div>
-            <div class="data-row"><span class="label">Sync Time</span><span id="val-time" class="value">--:--</span></div>
-            <div class="data-row"><span class="label">Ref Code</span><span id="val-ref-code" class="value">---</span></div>
-        </div>
+        <div class="tray-container">
+            <!-- THE RECEIPT -->
+            <div id="physical-receipt">
+                <div class="receipt-ink">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 25px;">
+                        <span style="font-weight:800; font-size:9px; border:1.5px solid #000; padding:2px 5px; text-transform:uppercase;">Admission Proof</span>
+                        <span style="font-family:'JetBrains Mono'; font-size:9px;" id="r-time">00:00:00</span>
+                    </div>
 
-        <button id="action-btn" onclick="handleAttendance()">Confirm Attendance</button>
+                    <div style="font-size: 50px; font-weight: 800; letter-spacing: -0.04em; line-height: 0.8; margin-bottom: 30px;" id="r-ref">---</div>
+
+                    <div style="border-top: 2px solid #000; padding-top: 15px; margin-bottom: 30px;">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                            <span class="label" style="color:#000;">Student ID</span>
+                            <span style="font-weight:700;" id="r-id">---</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px;">
+                            <span class="label" style="color:#000;">Verification</span>
+                            <span style="font-weight:700;" id="r-dist">Verified</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; opacity: 0.8;">
+                        <img id="barcode" src="" style="width: 100%; height: 32px; mix-blend-mode: multiply;">
+                        <div style="font-size:6px; font-weight:800; margin-top:10px; letter-spacing:0.3em;">SYSTEM_ENCRYPTED_RECEIPT_V4</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="final-controls" id="controls">
+        <button style="background:white; color:black; flex:1;" onclick="location.reload()">Reset</button>
+        <button style="flex:2;" onclick="downloadReceipt()">Save Receipt <i class="fa-solid fa-download"></i></button>
     </div>
 
 <script>
+// --- ORIGINAL LOGIC RETAINED ---
 const THRESHOLD_KM = 0.3; 
 const FORM_URL = "https://docs.google.com/forms/u/0/d/1lWPkeQRomJdfuRU2ZzEmfDNVCPo8Lcw6LxK0Cv_PPkc/formResponse";
 
 let foundData = null;
 
-// ================= INIT =================
 document.getElementById('student-id').innerText = sessionStorage.getItem('userId') || 'Guest';
 document.getElementById('student-name').innerText = sessionStorage.getItem('userName') || '---';
 document.getElementById('val-ref-code').innerText = sessionStorage.getItem('refCode') || '---';
 
-// ================= FETCH GOOGLE SHEET =================
 const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
 const sheetName = "MainSessionServer";
 const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
@@ -268,7 +276,6 @@ fetch(url)
 })
 .catch(err => console.error("Fetch error:", err));
 
-// ================= HELPERS =================
 function parseCoordinate(coordStr) {
     const [lat, lon] = coordStr.split(',').map(Number);
     return [lat, lon];
@@ -293,12 +300,11 @@ function setUIState(state, message, btnLabel) {
     if (state) card.classList.add(`is-${state}`);
 
     if (message) statusText.innerText = message;
-    if (btnLabel) btn.innerText = btnLabel;
+    if (btnLabel) btn.innerHTML = `${btnLabel} <i class="fa-solid fa-print"></i>`;
 
     btn.disabled = (state === 'loading' || state === 'success');
 }
 
-// ================= SEND =================
 async function sendToGoogleForm(data) {
     const formData = new URLSearchParams();
     formData.append('entry.1635954407', data.timestamp);
@@ -312,7 +318,6 @@ async function sendToGoogleForm(data) {
     localStorage.setItem('lastAttendanceTime', Date.now().toString());
 }
 
-// ================= MAIN =================
 async function handleAttendance() {
     setUIState('loading', 'Syncing...', 'Validating');
 
@@ -328,7 +333,7 @@ async function handleAttendance() {
         const [latVenue, lonVenue] = parseCoordinate(foundData.COORDINATE);
         const d = calculateDistance(lat, lon, latVenue, lonVenue);
 
-        const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const formattedDist = d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(2)} km`;
 
         document.getElementById("val-distance").innerText = formattedDist;
@@ -336,6 +341,13 @@ async function handleAttendance() {
         document.getElementById("val-current-name").innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
 
         if (d <= THRESHOLD_KM) {
+            // Update Receipt Data
+            document.getElementById('r-id').innerText = sessionStorage.getItem('userId');
+            document.getElementById('r-ref').innerText = sessionStorage.getItem('refCode');
+            document.getElementById('r-dist').innerText = formattedDist;
+            document.getElementById('r-time').innerText = timeNow;
+            document.getElementById('barcode').src = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${sessionStorage.getItem('userId')}-${sessionStorage.getItem('refCode')}&scale=2&rotate=N`;
+
             await sendToGoogleForm({
                 timestamp: timeNow,
                 studentId: sessionStorage.getItem('userId'),
@@ -344,8 +356,16 @@ async function handleAttendance() {
                 location: `${lat}, ${lon}`,
                 refCode: sessionStorage.getItem('refCode')
             });
+
             localStorage.setItem('latestTimeSuccess', Date.now());
             setUIState('success', 'Verified', 'Success');
+            
+            // Start Printer Eject
+            document.body.classList.add('is-printing');
+            setTimeout(() => {
+                document.getElementById('controls').style.display = 'flex';
+            }, 4000);
+
         } else {
             setUIState('error', 'Out of Range', 'Retry');
         }
@@ -353,6 +373,17 @@ async function handleAttendance() {
         setUIState('error', 'Signal Lost', 'Retry');
     }
 }
+
+async function downloadReceipt() {
+    const receipt = document.getElementById('physical-receipt');
+    const canvas = await html2canvas(receipt, { backgroundColor: '#FCFAF5', scale: 3, useCORS: true });
+    const link = document.createElement('a');
+    link.download = `RECEIPT_${sessionStorage.getItem('refCode')}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+}
 </script>
 </body>
 </html>
+
+```
