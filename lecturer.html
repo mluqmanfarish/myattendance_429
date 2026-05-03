@@ -462,4 +462,76 @@
             container.innerHTML = '<div style="padding:40px; text-align:center; font-family:JetBrains Mono; font-size:12px;">Syncing Signal...</div>';
             
             const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
-            const url = `https
+            const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=StudentAttendance&tq=` + encodeURIComponent(`SELECT * WHERE F = ${ref}`);
+
+            try {
+                const res = await fetch(url);
+                const text = await res.text();
+                const json = JSON.parse(text.substring(47).slice(0, -2));
+                const rows = json.table.rows;
+                container.innerHTML = "";
+                document.getElementById('ui-students-found').innerText = rows.length;
+                rows.forEach(r => {
+                    container.innerHTML += `
+                        <div class="log-item">
+                            <div>
+                                <div class="log-name">${r.c[2].v}</div>
+                                <div class="log-id">${r.c[1].v}</div>
+                            </div>
+                            <div class="log-time">${r.c[0].f.split(' ')[1]}</div>
+                        </div>`;
+                });
+                if(rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No check-ins found.</div>';
+            } catch (e) { container.innerHTML = '<div style="padding:40px; text-align:center;">Sync error.</div>'; }
+        }
+
+        async function checkSessionsAct() {
+            const lecId = document.getElementById('search-lec').value;
+            const container = document.getElementById('sessions-body');
+            if(!lecId) return;
+            container.innerHTML = '<div style="padding:20px; text-align:center;">Querying Database...</div>';
+            
+            const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
+            const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=MainSessionServer&tq=` + encodeURIComponent(`SELECT * WHERE I = '${lecId}'`);
+
+            try {
+                const res = await fetch(url);
+                const text = await res.text();
+                const json = JSON.parse(text.substring(47).slice(0, -2));
+                container.innerHTML = "";
+                json.table.rows.forEach(r => {
+                    container.innerHTML += `
+                        <div class="history-card">
+                            <div class="history-info">
+                                <h4 style="font-weight:800; font-size:15px;">${r.c[1].v}</h4>
+                                <p style="font-size:11px; color:#666; margin-top:3px;">${r.c[0].f.split(' ')[0]} • ${r.c[6].v}</p>
+                            </div>
+                            <div style="background:var(--fg); color:#fff; padding:4px 8px; font-family:JetBrains Mono; font-size:11px; border-radius:2px; height:fit-content;">${r.c[3].v}</div>
+                        </div>`;
+                });
+                if(json.table.rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No records found.</div>';
+            } catch (e) { container.innerHTML = '<div style="padding:20px; text-align:center;">Error fetching history.</div>'; }
+        }
+
+        function generateRefCode() { document.getElementById('ref-code').value = Math.floor(10000 + Math.random() * 90000); }
+
+        window.onload = () => {
+            initMap();
+            generateRefCode();
+            const sid = sessionStorage.getItem('userId');
+            if(sid) {
+                document.getElementById('search-lec').value = sid;
+                checkSessionsAct();
+            }
+
+            // Bind enter key for map search
+            document.getElementById('map-search-input').addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    e.preventDefault();
+                    searchLocation();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
