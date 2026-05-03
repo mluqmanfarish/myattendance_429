@@ -1,60 +1,50 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Lecturer Hub | Swiss Modern</title>
+    <title>Lecturer Hub | Calm Brutalist</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Leaflet JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-        // --- ORIGINAL PROTECTION LOGIC ---
-        (function protectPage() {
-            const role = sessionStorage.getItem('userRole');
-            if (role !== 'lecturer') { 
-                // window.location.href = 'index.html'; 
-            }
-        })();
-    </script>
-
     <style>
         :root {
-            --bg: #F2F2F2;
-            --fg: #000000;
-            --accent: #0071E3;
-            --success: #34C759;
-            --warning: #FF9500;
-            --border-width: 3px;
-            --shadow: 8px 8px 0px #000000;
+            --bg: #F5F4F0; /* Soft Paper Beige */
+            --fg: #1A1A1A; /* Deep Ink */
+            --accent: #A5B68D; /* Calm Sage Green */
+            --accent-dark: #86996D;
+            --success: #6B8A7A;
+            --border-width: 2.5px;
+            --shadow-color: rgba(26, 26, 26, 1);
             --card-bg: #FFFFFF;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg);
             color: var(--fg);
-            padding-bottom: 120px;
+            padding-bottom: 140px;
         }
 
+        /* Subtler Grid */
         .grid-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px);
-            background-size: 40px 40px; z-index: -1;
+            background-image: radial-gradient(#D1D1D1 1.2px, transparent 1.2px);
+            background-size: 32px 32px; z-index: -1;
         }
 
-        /* --- Header --- */
         header {
-            padding: 24px;
+            padding: 20px 24px;
             background: white;
             border-bottom: var(--border-width) solid var(--fg);
             display: flex;
@@ -65,112 +55,115 @@
             z-index: 1000;
         }
 
-        .brand { font-weight: 800; text-transform: uppercase; letter-spacing: -1px; font-size: 20px; }
-        .sys-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: #000; color: #fff; padding: 4px 8px; }
-
-        /* --- Main Layout --- */
-        main {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+        .brand { font-weight: 800; text-transform: uppercase; letter-spacing: -0.5px; font-size: 18px; }
+        .sys-tag { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 9px; 
+            background: var(--fg); 
+            color: #fff; 
+            padding: 5px 10px;
+            border-radius: 2px;
         }
 
+        main { max-width: 540px; margin: 0 auto; padding: 20px; }
+
         .panel-label {
-            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
-            color: #999; margin: 25px 0 12px; display: block;
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+            color: #7A7A7A; margin: 30px 0 15px; display: block;
         }
 
         .card {
             background: var(--card-bg);
             border: var(--border-width) solid var(--fg);
-            box-shadow: var(--shadow);
-            padding: 30px;
+            box-shadow: 6px 6px 0px var(--shadow-color);
+            border-radius: 4px;
+            padding: 24px;
             margin-bottom: 30px;
         }
 
-        h2 { font-size: 28px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; line-height: 0.9; }
+        h2 { font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; letter-spacing: -0.5px; }
 
-        /* --- Form Elements --- */
-        .field { margin-bottom: 24px; }
-        label { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; }
+        /* Form Elements */
+        .field { margin-bottom: 20px; }
+        label { display: block; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: #555; }
         
         input {
-            width: 100%; padding: 16px;
+            width: 100%; padding: 14px;
             border: var(--border-width) solid var(--fg);
-            font-family: inherit; font-size: 16px; font-weight: 600;
-            background: #f9f9f9;
+            font-family: inherit; font-size: 15px; font-weight: 600;
+            background: #fff;
+            border-radius: 4px;
         }
-        input:focus { outline: none; background: #fff; border-color: var(--accent); }
-        input[readonly] { background: #E0F0FF; color: var(--accent); text-align: center; font-family: 'JetBrains Mono'; font-size: 24px; }
+        input:focus { outline: none; border-color: var(--accent-dark); box-shadow: 0 0 0 4px rgba(165, 182, 141, 0.2); }
+        input[readonly] { background: var(--bg); color: var(--fg); font-family: 'JetBrains Mono'; font-size: 22px; text-align: center; border-style: dashed; }
 
         .map-container {
-            height: 250px; border: var(--border-width) solid var(--fg);
-            margin-bottom: 20px; position: relative; overflow: hidden;
+            height: 220px; border: var(--border-width) solid var(--fg);
+            margin-bottom: 20px; border-radius: 4px; overflow: hidden;
         }
 
         button {
-            width: 100%; padding: 20px;
+            width: 100%; padding: 18px;
             background: var(--fg); color: white;
             border: var(--border-width) solid var(--fg);
+            border-radius: 4px;
             font-family: inherit; font-weight: 800; text-transform: uppercase;
-            cursor: pointer; transition: 0.1s;
+            cursor: pointer; transition: 0.2s;
             display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
         }
 
-        button:active { transform: translate(4px, 4px); box-shadow: none; }
-        button.secondary { background: var(--accent); border-color: var(--fg); }
+        button:active { transform: translate(2px, 2px); box-shadow: none; }
+        button.secondary { background: var(--accent); color: var(--fg); border-color: var(--fg); }
+        button.secondary:hover { background: var(--accent-dark); }
 
-        /* --- Live Monitoring UI --- */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        /* Telemetry UI */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .stat-box { 
             border: var(--border-width) solid var(--fg); 
-            padding: 20px; background: #fff; text-align: left;
+            padding: 16px; background: #fff; border-radius: 4px;
         }
-        .stat-num { font-size: 40px; font-weight: 800; display: block; line-height: 1; margin-top: 10px; }
-        .stat-status { color: var(--success); font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .stat-num { font-size: 32px; font-weight: 800; display: block; margin-top: 5px; }
+        .stat-status { color: var(--success); font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 6px; }
 
         .log-container {
             border: var(--border-width) solid var(--fg);
-            max-height: 400px; overflow-y: auto; background: #fff;
+            border-radius: 4px; max-height: 350px; overflow-y: auto; background: #fff;
         }
         .log-item {
-            padding: 15px 20px; border-bottom: 1px solid #eee;
+            padding: 14px 18px; border-bottom: 1.5px solid #eee;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .log-item:last-child { border-bottom: none; }
         .log-name { font-weight: 700; font-size: 14px; }
-        .log-id { font-family: 'JetBrains Mono'; font-size: 11px; color: #888; }
-        .log-time { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700; }
+        .log-id { font-family: 'JetBrains Mono'; font-size: 10px; color: #777; }
+        .log-time { font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 700; background: var(--bg); padding: 2px 6px; border-radius: 3px; }
 
-        /* --- History List --- */
-        .history-card {
-            background: white; border: var(--border-width) solid var(--fg);
-            padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between;
-        }
-        .history-info h4 { font-weight: 800; text-transform: uppercase; font-size: 16px; }
-        .history-info p { font-size: 12px; color: #666; margin-top: 4px; }
-        .history-ref { background: #000; color: #fff; padding: 4px 8px; font-family: 'JetBrains Mono'; font-size: 12px; align-self: flex-start; }
-
-        /* --- Navigation Dock --- */
+        /* Navigation Dock */
         .dock-container {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; padding: 8px;
+            display: flex; gap: 8px; padding: 10px;
             background: white; border: var(--border-width) solid var(--fg);
-            box-shadow: var(--shadow); z-index: 2000;
+            box-shadow: 8px 8px 0px var(--fg); border-radius: 8px; z-index: 2000;
         }
         .dock-item {
-            padding: 12px 20px; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; gap: 4px; transition: 0.2s; border-radius: 4px;
+            padding: 10px 18px; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; gap: 4px; transition: 0.2s; border-radius: 6px;
+            color: #777;
         }
-        .dock-item.active { background: var(--fg); color: white; }
-        .dock-item i { font-size: 20px; }
-        .dock-item span { font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .dock-item.active { background: var(--accent); color: var(--fg); }
+        .dock-item i { font-size: 18px; }
+        .dock-item span { font-size: 9px; font-weight: 800; text-transform: uppercase; }
 
-        /* --- Transitions --- */
+        /* Panel Transitions */
         .panel { display: none; }
-        .panel.active { display: block; animation: panelIn 0.3s ease-out; }
-        @keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .panel.active { display: block; animation: panelIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes panelIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+        .history-card {
+            background: white; border: var(--border-width) solid var(--fg);
+            padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -178,59 +171,59 @@
     <div class="grid-bg"></div>
 
     <header>
-        <div class="brand">Control_Center</div>
-        <div class="sys-tag">SESSION.MANAGER.v1</div>
+        <div class="brand">Session_Control</div>
+        <div class="sys-tag">OS.LECTURER.V2</div>
     </header>
 
     <main>
         <!-- PANEL: CREATE -->
         <div id="panel-create" class="panel">
-            <span class="panel-label">Session Initialization</span>
+            <span class="panel-label">Node Setup</span>
             <div class="card">
-                <h2>Deploy New Node</h2>
+                <h2>Initialize Session</h2>
                 <form id="attendance-form">
                     <div class="field">
-                        <label>Course Identifier</label>
-                        <input type="text" id="course" placeholder="e.g. ADVANCED_ALGORITHMS" required>
+                        <label>Course Title</label>
+                        <input type="text" id="course" placeholder="e.g. Design Systems 101" required>
                     </div>
 
-                    <label>Geofence Target</label>
+                    <label>Location Geofence</label>
                     <div class="map-container" id="map"></div>
                     
                     <div class="field">
-                        <label>Coordinates (Auto-Fill)</label>
+                        <label>Target Coordinates</label>
                         <input type="text" id="coords" placeholder="Lat, Lng" required>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="field">
-                            <label>Venue Code</label>
-                            <input type="text" id="venue-name" placeholder="L_HALL_A" required>
+                            <label>Venue ID</label>
+                            <input type="text" id="venue-name" placeholder="Hall_7" required>
                         </div>
                         <div class="field">
-                            <label>Reference Pin</label>
+                            <label>Session PIN</label>
                             <input type="text" id="ref-code" readonly>
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="field">
-                            <label>Start Window</label>
+                            <label>Arrival Start</label>
                             <input type="time" id="time-in" required>
                         </div>
                         <div class="field">
-                            <label>Closure Time</label>
+                            <label>Arrival End</label>
                             <input type="time" id="time-out" required>
                         </div>
                     </div>
 
                     <div class="field">
-                        <label>Auth Email</label>
-                        <input type="email" id="lecturer-email" placeholder="lecturer@edu.com" required>
+                        <label>Contact Email</label>
+                        <input type="email" id="lecturer-email" placeholder="staff@university.edu" required>
                     </div>
 
                     <button type="submit">
-                        Broadcast Signal <i class="fa-solid fa-tower-broadcast"></i>
+                        Activate Node <i class="fa-solid fa-satellite-dish"></i>
                     </button>
                 </form>
             </div>
@@ -238,33 +231,33 @@
 
         <!-- PANEL: LIVE -->
         <div id="panel-live" class="panel active">
-            <span class="panel-label">Live Telemetry Stream</span>
+            <span class="panel-label">Active Signal Flow</span>
             <div class="card">
-                <h2>Real-Time Sync</h2>
+                <h2>Live Telemetry</h2>
                 
-                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-                    <input type="text" id="search-ref" placeholder="Enter Ref Pin" style="flex: 2;">
-                    <button class="secondary" style="flex: 1; padding: 0 15px;" onclick="checkAttendanceAct()">
-                        Sync <i class="fa-solid fa-rotate"></i>
+                <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                    <input type="text" id="search-ref" placeholder="Active PIN" style="flex: 2;">
+                    <button class="secondary" style="flex: 1; padding: 0 10px;" onclick="checkAttendanceAct()">
+                        Refresh <i class="fa-solid fa-sync"></i>
                     </button>
                 </div>
 
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <label>Verified Access</label>
+                        <label>Attendance</label>
                         <span class="stat-num" id="ui-students-found">0</span>
                     </div>
                     <div class="stat-box">
-                        <label>Status</label>
-                        <div class="stat-status"><i class="fa-solid fa-circle"></i> ACTIVE</div>
+                        <label>Connection</label>
+                        <div class="stat-status"><i class="fa-solid fa-circle-dot"></i> SECURE</div>
                     </div>
                 </div>
 
-                <label>Access Log</label>
+                <label>Stream Log</label>
                 <div class="log-container" id="attendance-body">
-                    <div style="padding: 40px; text-align: center; color: #999;">
-                        <i class="fa-solid fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                        Awaiting incoming signals...
+                    <div style="padding: 40px; text-align: center; color: #AAA; font-size: 13px;">
+                        <i class="fa-solid fa-fingerprint" style="font-size: 32px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
+                        Listening for check-in events...
                     </div>
                 </div>
             </div>
@@ -272,13 +265,13 @@
 
         <!-- PANEL: HISTORY -->
         <div id="panel-history" class="panel">
-            <span class="panel-label">Archive Retrieval</span>
+            <span class="panel-label">Secure Archives</span>
             <div class="card">
-                <h2>Vault Records</h2>
-                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-                    <input type="text" id="search-lec" placeholder="Staff ID (e.g. LEC-001)" style="flex: 2;">
+                <h2>Vault History</h2>
+                <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                    <input type="text" id="search-lec" placeholder="Lecturer ID" style="flex: 2;">
                     <button class="secondary" style="flex: 1;" onclick="checkSessionsAct()">
-                        Search <i class="fa-solid fa-magnifying-glass"></i>
+                        Fetch <i class="fa-solid fa-database"></i>
                     </button>
                 </div>
 
@@ -291,15 +284,15 @@
 
     <nav class="dock-container">
         <div class="dock-item" id="btn-panel-create" onclick="switchPanel('panel-create')">
-            <i class="fa-solid fa-plus"></i>
-            <span>Deploy</span>
+            <i class="fa-solid fa-plus-square"></i>
+            <span>Node</span>
         </div>
         <div class="dock-item active" id="btn-panel-live" onclick="switchPanel('panel-live')">
-            <i class="fa-solid fa-wave-square"></i>
+            <i class="fa-solid fa-bolt-lightning"></i>
             <span>Live</span>
         </div>
         <div class="dock-item" id="btn-panel-history" onclick="switchPanel('panel-history')">
-            <i class="fa-solid fa-box-archive"></i>
+            <i class="fa-solid fa-archive"></i>
             <span>Vault</span>
         </div>
     </nav>
@@ -308,7 +301,6 @@
         let map, marker;
         const FORM_URL = "https://docs.google.com/forms/u/0/d/1WPcBPA3FV4Vya83NXzA7p_98l0RHsQucyD9wVRlhfl0/formResponse";
 
-        // --- ORIGINAL LOGIC MAINTAINED ---
         function initMap() {
             map = L.map('map', { zoomControl: false, attributionControl: false }).setView([4.2105, 101.9758], 15);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
@@ -324,14 +316,14 @@
             document.querySelectorAll('.dock-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('active');
-            if(id === 'panel-create') setTimeout(() => map.invalidateSize(), 300);
+            if(id === 'panel-create') setTimeout(() => map.invalidateSize(), 400);
         }
 
         document.getElementById('attendance-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = this.querySelector('button');
             const originalText = btn.innerHTML;
-            btn.innerHTML = 'Broadcasting... <i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.innerHTML = 'Broadcasting... <i class="fa-solid fa-circle-notch fa-spin"></i>';
             
             const formData = new URLSearchParams();
             formData.append('entry.12763463', document.getElementById('course').value);
@@ -357,7 +349,7 @@
             const ref = document.getElementById('search-ref').value;
             const container = document.getElementById('attendance-body');
             if(!ref) return;
-            container.innerHTML = '<div style="padding:40px; text-align:center;" class="sys-tag">Querying Node...</div>';
+            container.innerHTML = '<div style="padding:40px; text-align:center; font-family:JetBrains Mono; font-size:12px;">Syncing Signal...</div>';
             
             const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
             const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=StudentAttendance&tq=` + encodeURIComponent(`SELECT * WHERE F = ${ref}`);
@@ -379,15 +371,15 @@
                             <div class="log-time">${r.c[0].f.split(' ')[1]}</div>
                         </div>`;
                 });
-                if(rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No students found for this PIN.</div>';
-            } catch (e) { container.innerHTML = '<div style="padding:40px; text-align:center;">Network error during sync.</div>'; }
+                if(rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No check-ins found.</div>';
+            } catch (e) { container.innerHTML = '<div style="padding:40px; text-align:center;">Sync error.</div>'; }
         }
 
         async function checkSessionsAct() {
             const lecId = document.getElementById('search-lec').value;
             const container = document.getElementById('sessions-body');
             if(!lecId) return;
-            container.innerHTML = '<div style="padding:20px; text-align:center;">Searching Archive...</div>';
+            container.innerHTML = '<div style="padding:20px; text-align:center;">Querying Database...</div>';
             
             const sheetID = "1iI5eSf6NkhFtD1uxkFtuPXBWX7-C0mA1h7LR8jw3JZw";
             const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=MainSessionServer&tq=` + encodeURIComponent(`SELECT * WHERE I = '${lecId}'`);
@@ -401,14 +393,14 @@
                     container.innerHTML += `
                         <div class="history-card">
                             <div class="history-info">
-                                <h4>${r.c[1].v}</h4>
-                                <p>${r.c[0].f.split(' ')[0]} • ${r.c[6].v}</p>
+                                <h4 style="font-weight:800; font-size:15px;">${r.c[1].v}</h4>
+                                <p style="font-size:11px; color:#666; margin-top:3px;">${r.c[0].f.split(' ')[0]} • ${r.c[6].v}</p>
                             </div>
-                            <div class="history-ref">${r.c[3].v}</div>
+                            <div style="background:var(--fg); color:#fff; padding:4px 8px; font-family:JetBrains Mono; font-size:11px; border-radius:2px; height:fit-content;">${r.c[3].v}</div>
                         </div>`;
                 });
-                if(json.table.rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No history found for this ID.</div>';
-            } catch (e) { container.innerHTML = '<div style="padding:20px; text-align:center;">Search failed.</div>'; }
+                if(json.table.rows.length === 0) container.innerHTML = '<div style="padding:40px; text-align:center;">No records found.</div>';
+            } catch (e) { container.innerHTML = '<div style="padding:20px; text-align:center;">Error fetching history.</div>'; }
         }
 
         function generateRefCode() { document.getElementById('ref-code').value = Math.floor(10000 + Math.random() * 90000); }
@@ -425,4 +417,3 @@
     </script>
 </body>
 </html>
-
